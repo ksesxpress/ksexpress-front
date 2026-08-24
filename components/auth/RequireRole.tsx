@@ -39,10 +39,12 @@ export function RequireRole({
       const legacyRole = (user.isSuperAdmin ? "SUPER_ADMIN" : (branchRole || user.roleCustomNom || (!user.isStaff ? "CLIENT" : "MANAGER")))?.toUpperCase();
       const upperAllow = allow.map(r => r.toUpperCase());
       
-      const isAllowed = upperAllow.includes(legacyRole as any) || (user.isSuperAdmin && upperAllow.includes("SUPER_ADMIN"));
+      const isAllowed = upperAllow.includes("STAFF") 
+        ? user.isStaff 
+        : (upperAllow.includes(legacyRole as any) || (user.isSuperAdmin && upperAllow.includes("SUPER_ADMIN")));
 
       if (!isAllowed) {
-        const target = user.isStaff ? "/staff" : "/portal";
+        const target = user.isStaff ? "/staff/unauthorized" : "/portal";
         if (pathname !== target) {
           router.replace(target);
         }
@@ -67,7 +69,9 @@ export function RequireRole({
 
   const legacyRole = user ? (user.isSuperAdmin ? "SUPER_ADMIN" : (branchRole || user.roleCustomNom || (!user.isStaff ? "CLIENT" : "MANAGER")))?.toUpperCase() : null;
   const upperAllow = allow.map(r => r.toUpperCase());
-  const isAllowed = user && (upperAllow.includes(legacyRole as any) || (user.isSuperAdmin && upperAllow.includes("SUPER_ADMIN")));
+  const isAllowed = user && (upperAllow.includes("STAFF") 
+    ? user.isStaff 
+    : (upperAllow.includes(legacyRole as any) || (user.isSuperAdmin && upperAllow.includes("SUPER_ADMIN"))));
 
   if (isLoading || !user) {
     return (

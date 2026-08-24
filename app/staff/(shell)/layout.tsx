@@ -22,7 +22,7 @@ import {
 import { RequireRole } from "@/components/auth/RequireRole";
 import { AppShell, type NavEntry } from "@/components/app-shell/AppShell";
 
-const STAFF_ROLES = ["SUPER_ADMIN", "MANAGER", "CAISSIER", "CASHIER"] as const;
+const STAFF_ROLES = ["SUPER_ADMIN", "MANAGER", "CAISSIER", "CASHIER", "STAFF"] as const;
 
 function getNavItems(activite?: string): NavEntry[] {
   // Navigation for SHIPPING branch ONLY
