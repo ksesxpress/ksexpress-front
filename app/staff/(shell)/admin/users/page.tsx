@@ -16,8 +16,9 @@ import { NewUserModal, UpdateUserModal, ViewUserModal, ConfirmDialog } from "@/c
 
 const ROLE_LABELS: Record<RoleInterne, string> = {
   SUPER_ADMIN: "SUPER ADMIN",
-  CAISSIER: "CAISSIER",
-  GESTIONNAIRE_STOCK: "GESTIONNAIRE STOCK",
+  MANAGER: "MANAGER",
+  DEV: "DEV",
+  CASHIER: "CASHIER",
 };
 
 export default function UtilisateursPage() {

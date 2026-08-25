@@ -22,7 +22,7 @@ import {
 import { RequireRole } from "@/components/auth/RequireRole";
 import { AppShell, type NavEntry } from "@/components/app-shell/AppShell";
 
-const STAFF_ROLES = ["SUPER_ADMIN", "MANAGER", "CAISSIER", "CASHIER", "STAFF"] as const;
+const STAFF_ROLES = ["SUPER_ADMIN", "MANAGER", "DEV", "CASHIER", "STAFF"] as const;
 
 function getNavItems(activite?: string): NavEntry[] {
   // Navigation for SHIPPING branch ONLY
@@ -39,7 +39,7 @@ function getNavItems(activite?: string): NavEntry[] {
             icon: HelpCircle,
             roles: ["SUPER_ADMIN", "MANAGER"],
           },
-          { href: "/staff/scan", label: "Scanner", icon: ScanLine, roles: ["SUPER_ADMIN", "MANAGER", "CAISSIER", "CASHIER"] },
+          { href: "/staff/scan", label: "Scanner", icon: ScanLine, roles: ["SUPER_ADMIN", "MANAGER", "DEV", "CASHIER"] },
           { href: "/staff/lots", label: "Lots d'expédition", icon: Boxes, roles: ["SUPER_ADMIN", "MANAGER"] },
         ],
       },
@@ -74,7 +74,7 @@ function getNavItems(activite?: string): NavEntry[] {
           icon: HelpCircle,
           roles: ["SUPER_ADMIN", "MANAGER"],
         },
-        { href: "/staff/scan", label: "Scanner", icon: ScanLine, roles: ["SUPER_ADMIN", "MANAGER", "CAISSIER", "CASHIER"] },
+        { href: "/staff/scan", label: "Scanner", icon: ScanLine, roles: ["SUPER_ADMIN", "MANAGER", "DEV", "CASHIER"] },
         { href: "/staff/lots", label: "Lots d'expédition", icon: Boxes, roles: ["SUPER_ADMIN", "MANAGER"] },
       ],
     },

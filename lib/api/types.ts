@@ -7,8 +7,9 @@ import type { ActiviteSuccursale } from "./succursales";
 // confiance côté client pour la sécurité, seulement pour l'UX).
 export type Role =
   | "SUPER_ADMIN"
-  | "CAISSIER"
-  | "GESTIONNAIRE_STOCK"
+  | "MANAGER"
+  | "DEV"
+  | "CASHIER"
   | "CLIENT";
 
 export interface JwtPayload {
@@ -39,6 +40,7 @@ export interface AuthTokens {
     roleCustom?: {
       id: string;
       nom: string;
+      level?: string;
       permissions?: string[];
     } | null;
   }>;

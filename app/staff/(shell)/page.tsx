@@ -63,7 +63,7 @@ const shortcuts: ShortcutCard[] = [
     label: "Colis",
     description: "Rechercher, créer et suivre les colis.",
     icon: Package,
-    roles: ["SUPER_ADMIN", "MANAGER", "CAISSIER", "CASHIER"],
+    roles: ["SUPER_ADMIN", "MANAGER", "DEV", "CASHIER"],
   },
   {
     href: "/staff/packages/unmatched",
@@ -77,7 +77,7 @@ const shortcuts: ShortcutCard[] = [
     label: "Scanner",
     description: "Faire avancer un colis d'un scan.",
     icon: ScanLine,
-    roles: ["SUPER_ADMIN", "MANAGER", "CAISSIER", "CASHIER"],
+    roles: ["SUPER_ADMIN", "MANAGER", "DEV", "CASHIER"],
   },
   {
     href: "/staff/lots",
@@ -91,21 +91,21 @@ const shortcuts: ShortcutCard[] = [
     label: "Clients",
     description: "Fiches clients et vue 360°.",
     icon: Users,
-    roles: ["SUPER_ADMIN", "MANAGER", "CAISSIER", "CASHIER"],
+    roles: ["SUPER_ADMIN", "MANAGER", "DEV", "CASHIER"],
   },
   {
     href: "/staff/invoices",
     label: "Factures",
     description: "Encaissement et reçus.",
     icon: Receipt,
-    roles: ["SUPER_ADMIN", "MANAGER", "CAISSIER", "CASHIER"],
+    roles: ["SUPER_ADMIN", "MANAGER", "DEV", "CASHIER"],
   },
   {
     href: "/staff/pos",
     label: "Point de Vente (POS)",
     description: "Caisse, encaissements et reçus.",
     icon: Wallet,
-    roles: ["SUPER_ADMIN", "MANAGER", "CAISSIER", "CASHIER"],
+    roles: ["SUPER_ADMIN", "MANAGER", "DEV", "CASHIER"],
   },
   {
     href: "/staff/admin/users",
@@ -134,10 +134,10 @@ const CHART_COLORS = [
 // Rôles pouvant lire chaque ressource — reflète exactement les décorateurs
 // @Roles(...) côté backend (voir colis/lots/factures/clients.controller.ts)
 // pour éviter des appels 403 inutiles au montage du dashboard.
-const CAN_READ_COLIS: string[] = ["SUPER_ADMIN", "MANAGER", "CAISSIER", "CASHIER"];
+const CAN_READ_COLIS: string[] = ["SUPER_ADMIN", "MANAGER", "DEV", "CASHIER"];
 const CAN_READ_LOTS: string[] = ["SUPER_ADMIN", "MANAGER"];
-const CAN_READ_FACTURES: string[] = ["SUPER_ADMIN", "MANAGER", "CAISSIER", "CASHIER"];
-const CAN_READ_CLIENTS: string[] = ["SUPER_ADMIN", "MANAGER", "CAISSIER", "CASHIER"];
+const CAN_READ_FACTURES: string[] = ["SUPER_ADMIN", "MANAGER", "DEV", "CASHIER"];
+const CAN_READ_CLIENTS: string[] = ["SUPER_ADMIN", "MANAGER", "DEV", "CASHIER"];
 
 // Style « dashboard-01 » (bloc shadcn) : carte avec libellé/valeur/badge de
 // tendance + pied de page contextuel — porté à la main (CLI shadcn bloquée
@@ -471,7 +471,7 @@ export default function EspaceDashboardPage() {
     [lots],
   );
 
-  const isCashier = legacyRole === "CAISSIER" || legacyRole === "CASHIER";
+  const isCashier = legacyRole === "CASHIER";
 
   if (isCashier) {
     return (

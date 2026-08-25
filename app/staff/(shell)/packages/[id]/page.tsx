@@ -65,8 +65,8 @@ export default function ColisDetailPage({ params }: { params: Promise<{ id: stri
       const activeId = m.getActiveSuccursale();
       const available = m.getAvailableSuccursales();
       const current = available.find(s => s.id === activeId);
-      const role = current?.roleCustom?.nom?.toUpperCase() || (user?.isStaff && !user.isSuperAdmin ? "CAISSIER" : "");
-      if (role === "CAISSIER" || role === "CASHIER") {
+      const role = current?.roleCustom?.level?.toUpperCase() || (user?.isStaff && !user.isSuperAdmin ? "CASHIER" : "");
+      if (role === "CASHIER") {
         setIsCashier(true);
       }
     });

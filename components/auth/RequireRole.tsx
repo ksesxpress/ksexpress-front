@@ -34,7 +34,7 @@ export function RequireRole({
       const activeId = m.getActiveSuccursale();
       const available = m.getAvailableSuccursales();
       const currentBranch = available.find(s => s.id === activeId);
-      const branchRole = currentBranch?.roleCustom?.nom;
+      const branchRole = currentBranch?.roleCustom?.level || currentBranch?.roleCustom?.nom;
 
       const legacyRole = (user.isSuperAdmin ? "SUPER_ADMIN" : (branchRole || user.roleCustomNom || (!user.isStaff ? "CLIENT" : "MANAGER")))?.toUpperCase();
       const upperAllow = allow.map(r => r.toUpperCase());
@@ -62,7 +62,7 @@ export function RequireRole({
       try {
         const available = JSON.parse(stored);
         const currentBranch = available.find((s: any) => s.id === activeId);
-        branchRole = currentBranch?.roleCustom?.nom;
+        branchRole = currentBranch?.roleCustom?.level || currentBranch?.roleCustom?.nom;
       } catch (e) {}
     }
   }

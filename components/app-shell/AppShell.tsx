@@ -70,7 +70,9 @@ function isGroup(entry: NavEntry): entry is NavGroup {
 
 const ROLE_LABELS: Record<string, string> = {
   SUPER_ADMIN: "Super Admin",
-  CAISSIER: "Caissier",
+  MANAGER: "Manager",
+  DEV: "Développeur",
+  CASHIER: "Caissier(e)",
   GESTIONNAIRE_STOCK: "Gestionnaire Stock",
   CLIENT: "Client",
 };
@@ -279,7 +281,7 @@ function AppShellInner({
     if (!user?.isStaff) {
       getMe()
         .then((c) => setClientInfo({ nom: c.nom, prenom: c.prenom, email: c.email, telephone: c.telephone }))
-        .catch(() => {});
+        .catch(() => { });
     }
   }, [user]);
 
@@ -423,7 +425,7 @@ function AppShellInner({
                     <span className="ml-auto text-[10px] tracking-widest text-muted-foreground">⌘S</span>
                   </DropdownMenuItem> */}
                   <DropdownMenuSeparator className="bg-border/50 mb-1" />
-                  
+
                   {availableSuccursales.length > 1 && !user?.isSuperAdmin && (
                     <>
                       <DropdownMenuLabel className="p-2 text-xs font-semibold text-muted-foreground uppercase">

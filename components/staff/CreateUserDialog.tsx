@@ -21,8 +21,9 @@ const labelClass = "mb-1 block text-[12.5px] font-bold ";
 
 const ROLE_LABELS: Record<RoleInterne, string> = {
   SUPER_ADMIN: "Super Admin",
-  CAISSIER: "Caissier",
-  GESTIONNAIRE_STOCK: "Gestionnaire Stock",
+  MANAGER: "Manager",
+  DEV: "Développeur",
+  CASHIER: "Caissier",
 };
 
 export function CreateUserDialog({
@@ -36,7 +37,7 @@ export function CreateUserDialog({
 }) {
   const [email, setEmail] = useState("");
   const [telephone, setTelephone] = useState("");
-  const [role, setRole] = useState<RoleInterne>("CAISSIER");
+  const [role, setRole] = useState<RoleInterne>("CASHIER");
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -44,7 +45,7 @@ export function CreateUserDialog({
     if (!open) {
       setEmail("");
       setTelephone("");
-      setRole("CAISSIER");
+      setRole("CASHIER");
       setError(null);
     }
   }, [open]);

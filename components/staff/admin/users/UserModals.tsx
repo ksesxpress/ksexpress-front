@@ -17,8 +17,9 @@ import { getRoles, type RoleCustom } from "@/lib/api/roles";
 
 const ROLE_LABELS: Record<RoleInterne, string> = {
   SUPER_ADMIN: "SUPER ADMIN",
-  CAISSIER: "CAISSIER",
-  GESTIONNAIRE_STOCK: "GESTIONNAIRE STOCK",
+  MANAGER: "MANAGER",
+  DEV: "DEV",
+  CASHIER: "CASHIER",
 };
 
 // ==============================================
@@ -62,7 +63,7 @@ export function NewUserModal({
     setIsSubmitting(true);
     try {
       const selectedRole = rolesList.find(r => r.id === roleCustomId);
-      const legacyRole: RoleInterne = (selectedRole?.level === '100' || selectedRole?.level === 'SUPER_ADMIN') ? 'SUPER_ADMIN' : 'CAISSIER';
+      const legacyRole: RoleInterne = (selectedRole?.level === '100' || selectedRole?.level === 'SUPER_ADMIN') ? 'SUPER_ADMIN' : 'CASHIER';
 
       const user = await createInternalUser({
         email,
@@ -320,7 +321,7 @@ export function UpdateUserModal({
     setIsSubmitting(true);
     try {
       const selectedRole = rolesList.find(r => r.id === roleCustomId);
-      const legacyRole: RoleInterne = (selectedRole?.level === '100' || selectedRole?.level === 'SUPER_ADMIN') ? 'SUPER_ADMIN' : 'CAISSIER';
+      const legacyRole: RoleInterne = (selectedRole?.level === '100' || selectedRole?.level === 'SUPER_ADMIN') ? 'SUPER_ADMIN' : 'CASHIER';
 
       const updated = await updateInternalUser(user.id, { 
         email, 

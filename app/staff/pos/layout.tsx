@@ -127,7 +127,7 @@ function CalculatorDialog({ open, onOpenChange }: { open: boolean; onOpenChange:
   );
 }
 
-const STAFF_ROLES = ["SUPER_ADMIN", "MANAGER", "CAISSIER", "CASHIER"] as const;
+const STAFF_ROLES = ["SUPER_ADMIN", "MANAGER", "DEV", "CASHIER"] as const;
 
 function formatTime(date: Date) {
   return date.toLocaleTimeString("fr-HT", { hour: "2-digit", minute: "2-digit", second: "2-digit" });

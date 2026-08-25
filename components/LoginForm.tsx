@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/dialog";
 import { useAuth, landingPathForRole } from "@/lib/auth/auth-context";
 import { ApiError } from "@/lib/api/types";
-import { setActiveSuccursale } from "@/lib/auth/tokens";
+import { setActiveSuccursale, setAvailableSuccursales } from "@/lib/auth/tokens";
 
 const fieldClass =
   "h-11 rounded-[10px] border-[1.5px] border-[#eadfcf] bg-white/70";
@@ -58,7 +58,7 @@ export function LoginForm() {
         setPendingSuccursales(succursales);
       } else {
         if (succursales && succursales.length > 0) {
-          import("@/lib/auth/tokens").then(m => m.setAvailableSuccursales(succursales));
+          setAvailableSuccursales(succursales);
           // Set active succursale unless it's a super admin with many (they choose locally on pages)
           if (!isSuperAdmin || succursales.length === 1) {
             setActiveSuccursale(succursales[0].id);
@@ -80,7 +80,7 @@ export function LoginForm() {
   function handleSelectSuccursale(succursaleId: string) {
     setActiveSuccursale(succursaleId);
     if (pendingSuccursales) {
-      import("@/lib/auth/tokens").then(m => m.setAvailableSuccursales(pendingSuccursales));
+      setAvailableSuccursales(pendingSuccursales);
     }
     if (pendingUser) {
       const succursale = pendingSuccursales?.find((s) => s.id === succursaleId);

@@ -61,7 +61,7 @@ export function getCurrentBranchRole(): string | null {
   const stored = getAvailableSuccursales();
   if (stored && activeId) {
     const currentBranch = stored.find((s) => s.id === activeId);
-    return currentBranch?.roleCustom?.nom || null;
+    return currentBranch?.roleCustom?.level || currentBranch?.roleCustom?.nom || null;
   }
   return null;
 }
