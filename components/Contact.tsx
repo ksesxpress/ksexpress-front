@@ -148,14 +148,14 @@ export function Contact() {
                   <Icon size={16} />
                 </div>
                 <div>
-                  <h5 className="text-[13.5px] font-semibold text-brand-dark">
+                  <h5 className="text-[13.5px] font-semibold text-white">
                     {title}
                   </h5>
-                  <span className="text-[13px] text-brand-grey">{value}</span>
+                  <span className="text-[13px] text-white/70">{value}</span>
                 </div>
               </div>
             ))}
-            <p className="mb-4 text-[12.5px] text-brand-grey">
+            <p className="mb-4 text-[12.5px] text-white/50">
               Paiements acceptés : espèces, paiements digitaux.
             </p>
             <motion.a
