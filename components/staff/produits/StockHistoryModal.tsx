@@ -37,29 +37,33 @@ export function StockHistoryModal({
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    async function loadHistory() {
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await fetch(`${API_URL}/produits/${produit!.id}/mouvements`, {
+          headers: {
+            Authorization: `Bearer ${getAccessToken()}`,
+          },
+        });
+        if (!res.ok) throw new Error("Erreur lors du chargement de l'historique.");
+        const data = await res.json();
+        setMouvements(data);
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError("Erreur inconnue");
+        }
+      } finally {
+        setLoading(false);
+      }
+    }
+
     if (isOpen && produit) {
       loadHistory();
     }
   }, [isOpen, produit]);
-
-  async function loadHistory() {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await fetch(`${API_URL}/produits/${produit!.id}/mouvements`, {
-        headers: {
-          Authorization: `Bearer ${getAccessToken()}`,
-        },
-      });
-      if (!res.ok) throw new Error("Erreur lors du chargement de l'historique.");
-      const data = await res.json();
-      setMouvements(data);
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  }
 
   function getTypeBadge(type: string) {
     switch (type) {

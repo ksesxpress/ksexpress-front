@@ -26,7 +26,7 @@ export interface CreateRoleData {
   succursaleId?: string;
 }
 
-export interface UpdateRoleData extends Partial<CreateRoleData> {}
+export type UpdateRoleData = Partial<CreateRoleData>;
 
 export async function getRoles(): Promise<RoleCustom[]> {
   return apiFetch<RoleCustom[]>("/admin/roles");
@@ -39,7 +39,7 @@ export async function getRole(id: string): Promise<RoleCustom> {
 export async function createRole(data: CreateRoleData): Promise<RoleCustom> {
   return apiFetch<RoleCustom>("/admin/roles", {
     method: "POST",
-    body: data as any,
+    body: data as unknown as Record<string, unknown>,
   });
 }
 
@@ -49,7 +49,7 @@ export async function updateRole(
 ): Promise<RoleCustom> {
   return apiFetch<RoleCustom>(`/admin/roles/${id}`, {
     method: "PATCH",
-    body: data as any,
+    body: data as unknown as Record<string, unknown>,
   });
 }
 

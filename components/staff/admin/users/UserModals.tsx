@@ -331,7 +331,7 @@ export function UpdateUserModal({
         roleCustomId: roleCustomId || undefined
       });
 
-      let finalUser = updated;
+      const finalUser = updated;
       if (updated.actif !== actif) {
         if (!actif) {
           await deactivateInternalUser(user.id);

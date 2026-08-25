@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useMemo, useCallback, useState, useEffect, Fragment } from "react";
 import { useAuth } from "@/lib/auth/auth-context";
+import { getCurrentBranchRole } from "@/lib/auth/tokens";
 import type { Role, JwtPayload } from "@/lib/api/types";
 import { getMe } from "@/lib/api/clients";
 import { cn } from "@/lib/utils";
@@ -522,18 +523,7 @@ export function AppShell({
   const pathname = usePathname();
   const router = useRouter();
 
-  let branchRole = null;
-  if (typeof window !== "undefined") {
-    const activeId = window.localStorage.getItem("kse_active_succursale");
-    const stored = window.localStorage.getItem("kse_available_succursales");
-    if (stored && activeId) {
-      try {
-        const available = JSON.parse(stored);
-        const currentBranch = available.find((s: any) => s.id === activeId);
-        branchRole = currentBranch?.roleCustom?.nom;
-      } catch (e) {}
-    }
-  }
+  const branchRole = getCurrentBranchRole();
 
   const legacyRole = user?.isSuperAdmin ? "SUPER_ADMIN" : (branchRole || user?.roleCustomNom || (!user?.isStaff ? "CLIENT" : "MANAGER"))?.toUpperCase();
 

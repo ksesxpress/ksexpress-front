@@ -17,7 +17,7 @@ export function PageHeader({ children, className }: { children: ReactNode; class
   return (
     <div
       className={cn(
-        "sticky top-0 sm:top-14 z-20 -mx-4 -mt-5 mb-5 space-y-1 bg-sidebar/80 backdrop-blur-md border-b border-sidebar-border px-4 pt-5 pb-4 sm:-mx-6 sm:-mt-6 sm:px-6 sm:pt-6",
+        "sticky top-0 sm:top-14 z-20 -mx-4 -mt-5 mb-5 space-y-1 bg-sidebar backdrop-blur-md border-b border-sidebar-border px-4 pt-5 pb-4 sm:-mx-6 sm:-mt-6 sm:px-6 sm:pt-6",
         className,
       )}
     >

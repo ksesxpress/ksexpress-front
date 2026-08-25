@@ -11,13 +11,13 @@ import {
 } from "react";
 import { apiLogin, apiLogout, apiLogoutAll, apiRefresh } from "@/lib/api/auth";
 import { ApiError, type JwtPayload } from "@/lib/api/types";
-import { getAccessToken, getRefreshToken, setTokens, clearTokens } from "./tokens";
+import { getAccessToken, getRefreshToken, setTokens, clearTokens, type AvailableSuccursale } from "./tokens";
 import { decodeJwt, isExpired } from "./jwt";
 
 interface AuthContextValue {
   user: JwtPayload | null;
   isLoading: boolean;
-  login: (identifiant: string, motDePasse: string) => Promise<{ user: JwtPayload, succursales?: any[] }>;
+  login: (identifiant: string, motDePasse: string) => Promise<{ user: JwtPayload, succursales?: AvailableSuccursale[] }>;
   logout: () => Promise<void>;
   logoutAll: () => Promise<void>;
 }

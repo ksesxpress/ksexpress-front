@@ -74,18 +74,18 @@ export async function toggleSuccursaleActif(id: string): Promise<Succursale> {
   });
 }
 
-export async function getSuccursale(id: string): Promise<Succursale & { membersCount?: number; utilisateurs?: any[] }> {
-  return apiFetch<Succursale & { membersCount?: number; utilisateurs?: any[] }>(`/succursales/${id}`, { auth: false });
+export async function getSuccursale(id: string): Promise<Succursale & { membersCount?: number; utilisateurs?: unknown[] }> {
+  return apiFetch<Succursale & { membersCount?: number; utilisateurs?: unknown[] }>(`/succursales/${id}`, { auth: false });
 }
 
-export async function addSuccursaleMember(id: string, utilisateurId: string, roleCustomId?: string): Promise<any> {
+export async function addSuccursaleMember(id: string, utilisateurId: string, roleCustomId?: string): Promise<unknown> {
   return apiFetch(`/succursales/${id}/membres`, {
     method: "POST",
     body: { utilisateurId, roleCustomId },
   });
 }
 
-export async function removeSuccursaleMember(id: string, utilisateurId: string): Promise<any> {
+export async function removeSuccursaleMember(id: string, utilisateurId: string): Promise<unknown> {
   return apiFetch(`/succursales/${id}/membres/${utilisateurId}`, {
     method: "DELETE",
   });

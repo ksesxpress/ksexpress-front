@@ -23,7 +23,7 @@ export function downloadCSV<T extends Record<string, any>>(
   
   // Générer la ligne d'en-tête
   const headerRow = keys.map(key => {
-    let header = columns && columns[key] ? columns[key] : (key as string);
+    const header = columns && columns[key] ? columns[key] : (key as string);
     // Échapper les guillemets et entourer de guillemets
     return `"${String(header).replace(/"/g, '""')}"`;
   }).join(",");

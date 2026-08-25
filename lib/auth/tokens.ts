@@ -1,5 +1,8 @@
 import type { AuthTokens } from "@/lib/api/types";
 
+// Type extracted directly from AuthTokens.succursales
+export type AvailableSuccursale = NonNullable<AuthTokens["succursales"]>[number];
+
 // localStorage — app réelle connectée à une vraie API (pas un artifact
 // Claude), le stockage en mémoire seul déconnecterait l'utilisateur à chaque
 // rechargement de page. Accès toujours gardé par `typeof window` (SSR/App
@@ -41,13 +44,24 @@ export function getActiveSuccursale(): string | null {
   return window.localStorage.getItem("kse_active_succursale");
 }
 
-export function setAvailableSuccursales(succursales: any[]): void {
+export function setAvailableSuccursales(succursales: AvailableSuccursale[]): void {
   if (typeof window === "undefined") return;
   window.localStorage.setItem("kse_available_succursales", JSON.stringify(succursales));
 }
 
-export function getAvailableSuccursales(): any[] {
+export function getAvailableSuccursales(): AvailableSuccursale[] {
   if (typeof window === "undefined") return [];
   const stored = window.localStorage.getItem("kse_available_succursales");
   return stored ? JSON.parse(stored) : [];
+}
+
+export function getCurrentBranchRole(): string | null {
+  if (typeof window === "undefined") return null;
+  const activeId = getActiveSuccursale();
+  const stored = getAvailableSuccursales();
+  if (stored && activeId) {
+    const currentBranch = stored.find((s) => s.id === activeId);
+    return currentBranch?.roleCustom?.nom || null;
+  }
+  return null;
 }

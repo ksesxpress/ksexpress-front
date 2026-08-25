@@ -14,7 +14,7 @@ export interface ShippingReportData {
   };
   clients: number;
   succursales: number;
-  items?: any[]; // For the table
+  items?: unknown[]; // For the table
 }
 
 export async function getShippingReports(filters?: {

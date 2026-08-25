@@ -9,6 +9,7 @@ import type { Client } from "@/lib/api/types";
 import { ApiError } from "@/lib/api/types";
 import { extractItems, extractTotal, formatMoney } from "@/lib/format";
 import { useAuth } from "@/lib/auth/auth-context";
+import { getCurrentBranchRole } from "@/lib/auth/tokens";
 import { InputGroup, InputGroupInput } from "@/components/ui/input-group";
 import { NumberedPagination } from "@/components/ui/pagination";
 import { PageHeader } from "@/components/app-shell/PageHeader";
@@ -194,27 +195,10 @@ function ClientActivateButton({ client, onChanged }: { client: Client; onChanged
 export default function ClientsPage() {
   const { user } = useAuth();
   
-  const [canCreate, setCanCreate] = useState(false);
-
-  useEffect(() => {
-    if (user?.isSuperAdmin) {
-      setCanCreate(true);
-      return;
-    }
-    const activeId = window.localStorage.getItem("kse_active_succursale");
-    const stored = window.localStorage.getItem("kse_available_succursales");
-    if (stored && activeId) {
-      try {
-        const available = JSON.parse(stored);
-        const currentBranch = available.find((s: any) => s.id === activeId);
-        if (currentBranch?.roleCustom?.nom === "CASHIER") {
-          setCanCreate(false);
-          return;
-        }
-      } catch (e) {}
-    }
-    setCanCreate(user?.isStaff ?? false);
-  }, [user]);
+  const branchRole = getCurrentBranchRole();
+  const legacyRole = user?.isSuperAdmin ? "SUPER_ADMIN" : (branchRole || user?.roleCustomNom || (!user?.isStaff ? "CLIENT" : "MANAGER"))?.toUpperCase();
+  const canManage = Boolean(user?.isSuperAdmin || user?.isStaff);
+  const canCreate = Boolean(user?.isSuperAdmin || (user?.isStaff && branchRole !== "CASHIER"));
 
   const [clients, setClients] = useState<Client[] | null>(null);
   const [total, setTotal] = useState<number | null>(null);
@@ -319,13 +303,13 @@ export default function ClientsPage() {
                   <TableHead>Email</TableHead>
                   <TableHead>Téléphone</TableHead>
                   <TableHead>Balance</TableHead>
-                  {canCreate && <TableHead className="text-right">Actions</TableHead>}
+                  {canManage && <TableHead className="text-right">Actions</TableHead>}
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {clients.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={canCreate ? 6 : 5} className="text-center text-brand-grey py-10">
+                    <TableCell colSpan={canManage ? 6 : 5} className="text-center text-brand-grey py-10">
                       Aucun client trouvé.
                     </TableCell>
                   </TableRow>
@@ -348,7 +332,7 @@ export default function ClientsPage() {
                             {formatMoney(c.balance)}
                           </span>
                         </TableCell>
-                        {canCreate && (
+                        {canManage && (
                           <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                             <div className="flex items-center justify-end gap-1">
                               <Button

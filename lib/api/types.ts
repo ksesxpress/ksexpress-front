@@ -36,7 +36,11 @@ export interface AuthTokens {
     // Pilote la redirection post-connexion (BOUTIQUE → /staff/pos) — voir
     // landingPathForRole dans lib/auth/auth-context.tsx.
     activite: ActiviteSuccursale;
-    roleCustom: any;
+    roleCustom?: {
+      id: string;
+      nom: string;
+      permissions?: string[];
+    } | null;
   }>;
 }
 

@@ -35,7 +35,8 @@ import {
   Legend,
 } from "recharts";
 import { useAuth } from "@/lib/auth/auth-context";
-import type { Role, Colis, Lot, Facture, Client } from "@/lib/api/types";
+import { getCurrentBranchRole, getActiveSuccursale, getAvailableSuccursales } from "@/lib/auth/tokens";
+import type { Role, Colis, Lot, Facture, Client, ApiErrorBody } from "@/lib/api/types";
 import { searchColis } from "@/lib/api/colis";
 import { searchLots } from "@/lib/api/lots";
 import { searchFactures } from "@/lib/api/factures";
@@ -247,18 +248,14 @@ export default function EspaceDashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [periode, setPeriode] = useState<Periode>("30j");
 
-  let branchRole = null;
+  const branchRole = getCurrentBranchRole();
   let branchActivite = null;
   if (typeof window !== "undefined") {
-    const activeId = window.localStorage.getItem("kse_active_succursale");
-    const stored = window.localStorage.getItem("kse_available_succursales");
+    const activeId = getActiveSuccursale();
+    const stored = getAvailableSuccursales();
     if (stored && activeId) {
-      try {
-        const available = JSON.parse(stored);
-        const currentBranch = available.find((s: any) => s.id === activeId);
-        branchRole = currentBranch?.roleCustom?.nom;
-        branchActivite = currentBranch?.activite;
-      } catch (e) {}
+      const currentBranch = stored.find((s) => s.id === activeId);
+      branchActivite = currentBranch?.activite || null;
     }
   }
 
@@ -635,7 +632,7 @@ export default function EspaceDashboardPage() {
                           <stop offset="95%" stopColor="#ff590d" stopOpacity={0.02} />
                         </linearGradient>
                       </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#f2e6d6" />
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
                       <XAxis
                         dataKey="jour"
                         fontSize={11}
@@ -694,7 +691,7 @@ export default function EspaceDashboardPage() {
                 ) : (
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={volumeParJour} margin={{ top: 8, right: 12, left: -20, bottom: 0 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#f2e6d6" />
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
                       <XAxis dataKey="jour" fontSize={11} tickLine={false} />
                       <YAxis allowDecimals={false} fontSize={11} tickLine={false} />
                       <Tooltip />
@@ -719,7 +716,7 @@ export default function EspaceDashboardPage() {
                 ) : (
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={colisParStatut} margin={{ top: 8, right: 12, left: -20, bottom: 0 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#f2e6d6" />
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
                       <XAxis dataKey="statut" fontSize={10} tickLine={false} interval={0} angle={-25} textAnchor="end" height={50} />
                       <YAxis allowDecimals={false} fontSize={11} tickLine={false} />
                       <Tooltip />
@@ -768,7 +765,7 @@ export default function EspaceDashboardPage() {
                   ) : (
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={revenuParMois} margin={{ top: 8, right: 12, left: -8, bottom: 0 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#f2e6d6" />
+                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
                         <XAxis dataKey="mois" fontSize={11} tickLine={false} />
                         <YAxis fontSize={11} tickLine={false} />
                         <Tooltip formatter={(value: unknown) => formatMoney(value as number)} />
