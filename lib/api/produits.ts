@@ -21,6 +21,7 @@ export interface Produit {
   description: string | null;
   prix: string;
   quantiteStock: number;
+  seuilAlerte?: number;
   photoUrl: string | null;
   actif: boolean;
   categorie?: CategorieProduit | null;
@@ -36,6 +37,7 @@ export interface CreateProduitPayload {
   description?: string;
   prix: number;
   quantiteStock?: number;
+  seuilAlerte?: number;
   photoUrl?: string;
 }
 

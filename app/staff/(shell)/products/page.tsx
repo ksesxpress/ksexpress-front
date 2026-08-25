@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Package, Plus, Search, MoreHorizontal, CheckCircle2, XCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { ProductModal } from "@/components/staff/produits/ProductModals";
+import { StockAdjustmentModal } from "@/components/staff/produits/StockAdjustmentModal";
+import { StockHistoryModal } from "@/components/staff/produits/StockHistoryModal";
 import { Combobox, ComboboxInput, ComboboxContent, ComboboxEmpty, ComboboxList, ComboboxItem } from "@/components/ui/combobox";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
@@ -18,6 +20,9 @@ export default function ProductsPage() {
   const [search, setSearch] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Produit | null>(null);
+  
+  const [adjustingStockProduct, setAdjustingStockProduct] = useState<Produit | null>(null);
+  const [historyProduct, setHistoryProduct] = useState<Produit | null>(null);
 
   const [availableSuccursales, setAvailableSuccursales] = useState<any[]>([]);
   const [localSuccursaleId, setLocalSuccursaleId] = useState<string>("all");
@@ -203,9 +208,14 @@ export default function ProductsPage() {
                         ${Number(prod.prix).toFixed(2)}
                       </td>
                       <td className="px-4 py-3">
-                        <Badge variant="outline" className="bg-white/5 text-white border-white/10">
-                          {prod.quantiteStock}
-                        </Badge>
+                        <div className="flex flex-col gap-1 items-start">
+                          <Badge variant="outline" className="bg-white/5 text-white border-white/10">
+                            {prod.quantiteStock}
+                          </Badge>
+                          {(prod.seuilAlerte ?? 0) > 0 && prod.quantiteStock <= prod.seuilAlerte! && (
+                            <Badge className="bg-red-500/20 text-red-400 border border-red-500/30 text-[10px] px-1 py-0 h-4">Stock Faible</Badge>
+                          )}
+                        </div>
                       </td>
                       <td className="px-4 py-3">
                         {prod.actif ? (
@@ -225,6 +235,12 @@ export default function ProductsPage() {
                           <DropdownMenuContent align="end" className="bg-brand-dark border-brand-grey/20 text-white">
                             <DropdownMenuItem className="focus:bg-white/10 focus:text-white cursor-pointer" onClick={() => openEditProduct(prod)}>
                               Modifier
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="focus:bg-white/10 focus:text-white cursor-pointer" onClick={() => setAdjustingStockProduct(prod)}>
+                              Ajuster le stock
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="focus:bg-white/10 focus:text-white cursor-pointer" onClick={() => setHistoryProduct(prod)}>
+                              Historique
                             </DropdownMenuItem>
                             <DropdownMenuItem className="focus:bg-white/10 focus:text-white cursor-pointer" onClick={() => handleToggle(prod.id)}>
                               {prod.actif ? "Désactiver" : "Activer"}
@@ -249,6 +265,19 @@ export default function ProductsPage() {
         onSuccess={() => {
           loadProducts(); // refresh the list
         }}
+      />
+
+      <StockAdjustmentModal
+        isOpen={!!adjustingStockProduct}
+        onClose={() => setAdjustingStockProduct(null)}
+        produit={adjustingStockProduct}
+        onSuccess={() => loadProducts()}
+      />
+
+      <StockHistoryModal
+        isOpen={!!historyProduct}
+        onClose={() => setHistoryProduct(null)}
+        produit={historyProduct}
       />
     </div>
   );

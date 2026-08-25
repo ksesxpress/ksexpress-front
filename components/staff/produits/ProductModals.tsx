@@ -27,6 +27,7 @@ export function ProductModal({
   const [description, setDescription] = useState("");
   const [prix, setPrix] = useState("");
   const [quantiteStock, setQuantiteStock] = useState("");
+  const [seuilAlerte, setSeuilAlerte] = useState("");
   const [categorieId, setCategorieId] = useState("");
   const [photoUrl, setPhotoUrl] = useState("");
   const [selectedBoutiqueId, setSelectedBoutiqueId] = useState("");
@@ -58,6 +59,7 @@ export function ProductModal({
       setDescription(productToEdit.description || "");
       setPrix(productToEdit.prix.toString());
       setQuantiteStock(productToEdit.quantiteStock.toString());
+      setSeuilAlerte(productToEdit.seuilAlerte?.toString() || "0");
       setCategorieId(productToEdit.categorieId || "");
       setPhotoUrl(productToEdit.photoUrl || "");
       setSelectedBoutiqueId(productToEdit.succursaleId);
@@ -77,6 +79,7 @@ export function ProductModal({
       setDescription("");
       setPrix("");
       setQuantiteStock("");
+      setSeuilAlerte("");
       setCategorieId("");
       setPhotoUrl("");
       setCatQuery("");
@@ -127,6 +130,7 @@ export function ProductModal({
         description: description.trim() || undefined,
         prix: Number(prix),
         quantiteStock: quantiteStock ? Number(quantiteStock) : undefined,
+        seuilAlerte: seuilAlerte ? Number(seuilAlerte) : 0,
         categorieId: categorieId || undefined,
         photoUrl: photoUrl || undefined,
       };
@@ -249,6 +253,19 @@ export function ProductModal({
                 min="0"
                 value={quantiteStock}
                 onChange={(e) => setQuantiteStock(e.target.value)}
+                disabled={loading}
+                className="bg-black/20 border-white/10 text-white placeholder:text-muted-foreground focus-visible:ring-brand-orange rounded-md h-10"
+                placeholder="0"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="seuilAlerte" className="text-sm font-semibold text-white">Seuil d'alerte (Stock min)</Label>
+              <Input
+                id="seuilAlerte"
+                type="number"
+                min="0"
+                value={seuilAlerte}
+                onChange={(e) => setSeuilAlerte(e.target.value)}
                 disabled={loading}
                 className="bg-black/20 border-white/10 text-white placeholder:text-muted-foreground focus-visible:ring-brand-orange rounded-md h-10"
                 placeholder="0"
