@@ -5,7 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
 import { Produit } from "@/lib/api/produits";
-import { API_URL, getToken } from "@/lib/api/config";
+import { API_URL } from "@/lib/api/config";
+import { getAccessToken } from "@/lib/auth/tokens";
 
 export function StockAdjustmentModal({
   isOpen,
@@ -42,7 +43,7 @@ export function StockAdjustmentModal({
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${getToken()}`,
+          Authorization: `Bearer ${getAccessToken()}`,
         },
         body: JSON.stringify({
           type,

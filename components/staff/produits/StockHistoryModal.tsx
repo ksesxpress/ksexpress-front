@@ -3,9 +3,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { Produit } from "@/lib/api/produits";
-import { API_URL, getToken } from "@/lib/api/config";
-import { format } from "date-fns";
-import { fr } from "date-fns/locale";
+import { API_URL } from "@/lib/api/config";
+import { getAccessToken } from "@/lib/auth/tokens";
+
 
 interface MouvementStock {
   id: string;
@@ -48,7 +48,7 @@ export function StockHistoryModal({
     try {
       const res = await fetch(`${API_URL}/produits/${produit!.id}/mouvements`, {
         headers: {
-          Authorization: `Bearer ${getToken()}`,
+          Authorization: `Bearer ${getAccessToken()}`,
         },
       });
       if (!res.ok) throw new Error("Erreur lors du chargement de l'historique.");
@@ -113,7 +113,13 @@ export function StockHistoryModal({
                   {mouvements.map((m) => (
                     <tr key={m.id} className="hover:bg-white/5">
                       <td className="px-4 py-3 whitespace-nowrap">
-                        {format(new Date(m.createdAt), "dd MMM yyyy, HH:mm", { locale: fr })}
+                        {new Intl.DateTimeFormat("fr-FR", {
+                          day: "2-digit",
+                          month: "short",
+                          year: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        }).format(new Date(m.createdAt))}
                       </td>
                       <td className="px-4 py-3">
                         {getTypeBadge(m.type)}
