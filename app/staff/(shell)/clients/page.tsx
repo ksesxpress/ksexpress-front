@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Loader2, Plus, Edit, UserX, UserCheck } from "lucide-react";
-import { searchClients, deactivateClient, activateClient } from "@/lib/api/clients";
+import { Loader2, Plus, Edit, UserX, UserCheck, Trash2 } from "lucide-react";
+import { searchClients, deactivateClient, activateClient, deleteClient } from "@/lib/api/clients";
 import type { Client } from "@/lib/api/types";
 import { ApiError } from "@/lib/api/types";
 import { extractItems, extractTotal, formatMoney } from "@/lib/format";
@@ -41,6 +41,83 @@ const STATUTS: { value: "all" | "true" | "false"; label: string }[] = [
   { value: "true", label: "Actif" },
   { value: "false", label: "Désactivé" },
 ];
+
+function ClientDeleteButton({ client, onDeleted }: { client: Client; onDeleted: (id: string) => void }) {
+  const { user } = useAuth();
+  const [error, setError] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+
+  if (!user?.isSuperAdmin) return null;
+
+  async function handleDelete() {
+    setError(null);
+    setIsSaving(true);
+    try {
+      await deleteClient(client.id);
+      onDeleted(client.id);
+      setIsOpen(false);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Une erreur est survenue.");
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  return (
+    <>
+      <span className="inline-flex flex-col">
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsOpen(true);
+          }}
+          disabled={isSaving}
+          className="text-red-600 hover:text-red-500 hover:bg-red-500/10 disabled:opacity-50"
+          title="Supprimer"
+        >
+          {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
+        </Button>
+      </span>
+
+      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <DialogContent className="sm:max-w-md bg-[#0a0a0f] border-white/10 text-white shadow-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-white">Supprimer le client</DialogTitle>
+            <DialogDescription className="text-white/60">
+              Voulez-vous vraiment supprimer définitivement le client <strong className="text-white">{client.prenom} {client.nom} ({client.codeKse})</strong> ? Cette action est irréversible.
+            </DialogDescription>
+          </DialogHeader>
+
+          {error && <p className="text-[13px] font-semibold text-red-500 bg-red-500/10 p-3 rounded-lg">{error}</p>}
+
+          <DialogFooter className="pt-4">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => setIsOpen(false)}
+              disabled={isSaving}
+              className="h-10 rounded-[8px] px-6 hover:bg-white/5 hover:text-white"
+            >
+              Annuler
+            </Button>
+            <Button
+              type="button"
+              onClick={handleDelete}
+              disabled={isSaving}
+              className="h-10 rounded-[8px] bg-red-600 hover:bg-red-500 px-6 font-bold text-white shadow-none"
+            >
+              {isSaving ? <Loader2 size={16} className="animate-spin mr-2" /> : null}
+              Supprimer
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
 
 function ClientDeactivateButton({ client, onChanged }: { client: Client; onChanged: (c: Client) => void }) {
   const [error, setError] = useState<string | null>(null);
@@ -215,6 +292,11 @@ export default function ClientsPage() {
     setClients((prev) => prev?.map((c) => (c.id === updated.id ? updated : c)) ?? null);
   }
 
+  function removeClientFromList(id: string) {
+    setClients((prev) => prev?.filter((c) => c.id !== id) ?? null);
+    setTotal((prev) => (prev ? prev - 1 : prev));
+  }
+
   useEffect(() => {
     const timeout = setTimeout(() => {
       searchClients({
@@ -349,6 +431,7 @@ export default function ClientsPage() {
                               </Button>
                               <ClientDeactivateButton client={c} onChanged={updateClientInList} />
                               <ClientActivateButton client={c} onChanged={updateClientInList} />
+                              <ClientDeleteButton client={c} onDeleted={removeClientFromList} />
                             </div>
                           </TableCell>
                         )}

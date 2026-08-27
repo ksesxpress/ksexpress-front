@@ -55,3 +55,6 @@ export const deactivateClient = (id: string) =>
   apiFetch<Client>(`/clients/${id}/deactivate`, { method: "PATCH" });
 export const activateClient = (id: string) =>
   apiFetch<Client>(`/clients/${id}/activate`, { method: "PATCH" });
+export const deleteClient = (id: string) =>
+  apiFetch<Client>(`/clients/${id}`, { method: "DELETE" });
+
