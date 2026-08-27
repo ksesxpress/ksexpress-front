@@ -232,7 +232,7 @@ export function ProductModal({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="prix" className="text-sm font-semibold text-white">Prix (HTG/USD) <span className="text-brand-orange">*</span></Label>
+              <Label htmlFor="prix" className="text-sm font-semibold text-white">Prix (HTG) <span className="text-brand-orange">*</span></Label>
               <Input
                 id="prix"
                 type="number"
