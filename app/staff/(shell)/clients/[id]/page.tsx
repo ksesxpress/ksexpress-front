@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { InputGroup, InputGroupInput } from "@/components/ui/input-group";
 import { Label } from "@/components/ui/label";
 import { PageHeader } from "@/components/app-shell/PageHeader";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { mergeFactures } from "@/lib/api/factures";
 
 const fieldClass = "h-11 rounded-[10px] border border-white/10 bg-white/5 text-white";
@@ -48,6 +49,7 @@ export default function ClientDetailPage({ params }: { params: Promise<{ id: str
   const [canal, setCanal] = useState<CanalNotification>("EMAIL");
   const [isSaving, setIsSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [alertMessage, setAlertMessage] = useState<string | null>(null);
 
   const [selectedFactures, setSelectedFactures] = useState<string[]>([]);
   const [isMerging, setIsMerging] = useState(false);
@@ -76,7 +78,7 @@ export default function ClientDetailPage({ params }: { params: Promise<{ id: str
       await mergeFactures(selectedFactures);
       load();
     } catch (err) {
-      alert(err instanceof ApiError ? err.message : "Erreur lors de la fusion.");
+      setAlertMessage(err instanceof ApiError ? err.message : "Erreur lors de la fusion.");
     } finally {
       setIsMerging(false);
     }
@@ -335,6 +337,25 @@ export default function ClientDetailPage({ params }: { params: Promise<{ id: str
           </ul>
         </section>
       </div>
+
+      <Dialog open={!!alertMessage} onOpenChange={(open) => !open && setAlertMessage(null)}>
+        <DialogContent className="max-w-md bg-[#13111C] border border-white/10 p-6 text-white sm:rounded-[12px]">
+          <DialogHeader>
+            <DialogTitle className="text-[17px] font-bold text-white">Attention</DialogTitle>
+            <DialogDescription className="text-[14px] text-white/70 mt-2">
+              {alertMessage}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="mt-6">
+            <Button
+              onClick={() => setAlertMessage(null)}
+              className="bg-brand-orange hover:bg-brand-orange-dark text-white font-bold h-10 px-6 rounded-[8px]"
+            >
+              Compris
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -341,7 +341,7 @@ export default function ClientsPage() {
                 setPage(1);
               }}
               placeholder="Rechercher par nom, téléphone, code KSE..."
-              className="!h-10 w-full rounded-[8px] border-[1.5px] border-white/20 bg-white/80 backdrop-blur-xl px-3 text-[13.5px] text-brand-dark shadow-none"
+              className="!h-10 w-full rounded-[8px] border border-white/10 bg-[#13111C] px-3 text-[13.5px] text-white placeholder-white/40 shadow-none"
             />
           </InputGroup>
         </div>

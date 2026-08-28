@@ -13,6 +13,7 @@ import { useAuth } from "@/lib/auth/auth-context";
 import { NumberedPagination } from "@/components/ui/pagination";
 import { PageHeader } from "@/components/app-shell/PageHeader";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { PrintReportHeader } from "@/components/staff/PrintReportHeader";
 import { CreateInvoiceDialog } from "@/components/staff/CreateInvoiceDialog";
 import { Button } from "@/components/ui/button";
@@ -53,22 +54,26 @@ export default function EspaceFacturesPage() {
   const [selectedFactures, setSelectedFactures] = useState<string[]>([]);
   const [isMerging, setIsMerging] = useState(false);
   const [refresh, setRefresh] = useState(0);
+  const [alertMessage, setAlertMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    searchFactures({
-      statut: statut === "all" ? undefined : statut,
-      recherche: recherche.trim() || undefined,
-      page,
-      taille: TAILLE,
-    })
-      .then((res) => {
-        setFactures(extractItems(res));
-        setTotal(extractTotal(res));
-        setSelectedFactures([]);
+    const timeout = setTimeout(() => {
+      searchFactures({
+        statut: statut === "all" ? undefined : statut,
+        recherche: recherche.trim() || undefined,
+        page,
+        taille: TAILLE,
       })
-      .catch((err) =>
-        setError(err instanceof ApiError ? err.message : "Impossible de charger les factures."),
-      );
+        .then((res) => {
+          setFactures(extractItems(res));
+          setTotal(extractTotal(res));
+          setSelectedFactures([]);
+        })
+        .catch((err) =>
+          setError(err instanceof ApiError ? err.message : "Impossible de charger les factures."),
+        );
+    }, 300);
+    return () => clearTimeout(timeout);
   }, [statut, recherche, page, refresh]);
 
   function toggleFacture(facture: Facture) {
@@ -78,7 +83,7 @@ export default function EspaceFacturesPage() {
       if (selectedFactures.length > 0) {
         const firstSelected = factures?.find((f) => f.id === selectedFactures[0]);
         if (firstSelected && firstSelected.clientId !== facture.clientId) {
-          alert("Vous ne pouvez fusionner que des factures appartenant au même client.");
+          setAlertMessage("Vous ne pouvez fusionner que des factures appartenant au même client.");
           return;
         }
       }
@@ -93,7 +98,7 @@ export default function EspaceFacturesPage() {
       await mergeFactures(selectedFactures);
       setRefresh((r) => r + 1);
     } catch (err) {
-      alert(err instanceof ApiError ? err.message : "Erreur lors de la fusion.");
+      setAlertMessage(err instanceof ApiError ? err.message : "Erreur lors de la fusion.");
     } finally {
       setIsMerging(false);
     }
@@ -257,8 +262,28 @@ export default function EspaceFacturesPage() {
         <CreateInvoiceDialog
           open={isCreateOpen}
           onOpenChange={setIsCreateOpen}
+          onSuccess={() => setRefresh((r) => r + 1)}
         />
       )}
+
+      <Dialog open={!!alertMessage} onOpenChange={(open) => !open && setAlertMessage(null)}>
+        <DialogContent className="max-w-md bg-[#13111C] border border-white/10 p-6 text-white sm:rounded-[12px]">
+          <DialogHeader>
+            <DialogTitle className="text-[17px] font-bold text-white">Attention</DialogTitle>
+            <DialogDescription className="text-[14px] text-white/70 mt-2">
+              {alertMessage}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="mt-6">
+            <Button
+              onClick={() => setAlertMessage(null)}
+              className="bg-brand-orange hover:bg-brand-orange-dark text-white font-bold h-10 px-6 rounded-[8px]"
+            >
+              Compris
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

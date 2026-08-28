@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Loader2, Plus } from "lucide-react";
+import { Loader2, Plus, Pencil } from "lucide-react";
 import { searchGrilles, updateGrille } from "@/lib/api/tarification";
 import type { GrilleTarifaire } from "@/lib/api/types";
 import { ApiError } from "@/lib/api/types";
 import { extractItems, formatDate, formatMoney } from "@/lib/format";
 import { PageHeader } from "@/components/app-shell/PageHeader";
 import { CreateGrilleDialog } from "@/components/staff/CreateGrilleDialog";
+import { EditGrilleDialog } from "@/components/staff/EditGrilleDialog";
 import {
   Table,
   TableBody,
@@ -17,7 +18,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-function GrilleRow({ grille, onChanged }: { grille: GrilleTarifaire; onChanged: (g: GrilleTarifaire) => void }) {
+function GrilleRow({ grille, onChanged, onEdit }: { grille: GrilleTarifaire; onChanged: (g: GrilleTarifaire) => void; onEdit: (g: GrilleTarifaire) => void }) {
   async function toggleActif() {
     const updated = await updateGrille(grille.id, { actif: !grille.actif });
     onChanged(updated);
@@ -44,14 +45,23 @@ function GrilleRow({ grille, onChanged }: { grille: GrilleTarifaire; onChanged: 
       <TableCell>{grille.taxes}%</TableCell>
       <TableCell>{formatDate(grille.dateEffet)}</TableCell>
       <TableCell>
-        <button
-          onClick={toggleActif}
-          className={`rounded-[6px] px-2.5 py-1 text-[11.5px] font-bold transition-colors ${
-            grille.actif ? "bg-green-100 text-green-700 hover:bg-green-200" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-          }`}
-        >
-          {grille.actif ? "Active" : "Inactive"}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={toggleActif}
+            className={`rounded-[6px] px-2.5 py-1 text-[11.5px] font-bold transition-colors ${
+              grille.actif ? "bg-green-100 text-green-700 hover:bg-green-200" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+            }`}
+          >
+            {grille.actif ? "Active" : "Inactive"}
+          </button>
+          <button
+            onClick={() => onEdit(grille)}
+            className="rounded-[6px] p-1.5 text-brand-orange hover:bg-brand-orange/10 transition-colors"
+            title="Modifier"
+          >
+            <Pencil size={16} />
+          </button>
+        </div>
       </TableCell>
     </TableRow>
   );
@@ -61,19 +71,23 @@ export default function TarificationPage() {
   const [grilles, setGrilles] = useState<GrilleTarifaire[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  
+  const [editingGrille, setEditingGrille] = useState<GrilleTarifaire | null>(null);
 
   useEffect(() => {
-    searchGrilles({ taille: 100 })
+    searchGrilles({})
       .then((res) => setGrilles(extractItems(res)))
-      .catch((err) => setError(err instanceof ApiError ? err.message : "Impossible de charger les grilles."));
+      .catch((err) => setError(err instanceof ApiError ? err.message : "Erreur chargement"));
   }, []);
 
   function updateInList(updated: GrilleTarifaire) {
-    setGrilles((prev) => prev?.map((g) => (g.id === updated.id ? updated : g)) ?? null);
+    setGrilles((prev) =>
+      prev ? prev.map((g) => (g.id === updated.id ? updated : g)) : null,
+    );
   }
 
   return (
-    <div className="space-y-5">
+    <div className="flex min-h-screen flex-col space-y-5">
       <PageHeader>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h1 className="text-2xl font-extrabold text-white">Grilles tarifaires</h1>
@@ -117,7 +131,7 @@ export default function TarificationPage() {
                   </TableRow>
                 ) : (
                   grilles.map((g) => (
-                    <GrilleRow key={g.id} grille={g} onChanged={updateInList} />
+                    <GrilleRow key={g.id} grille={g} onChanged={updateInList} onEdit={setEditingGrille} />
                   ))
                 )}
               </TableBody>
@@ -130,6 +144,15 @@ export default function TarificationPage() {
         open={isCreateOpen}
         onOpenChange={setIsCreateOpen}
         onCreated={(newGrille) => setGrilles((prev) => (prev ? [newGrille, ...prev] : [newGrille]))}
+      />
+
+      <EditGrilleDialog
+        grille={editingGrille}
+        open={!!editingGrille}
+        onOpenChange={(open) => !open && setEditingGrille(null)}
+        onUpdated={(updated) => {
+          updateInList(updated);
+        }}
       />
     </div>
   );
