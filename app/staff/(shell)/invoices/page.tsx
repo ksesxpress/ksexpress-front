@@ -262,7 +262,6 @@ export default function EspaceFacturesPage() {
         <CreateInvoiceDialog
           open={isCreateOpen}
           onOpenChange={setIsCreateOpen}
-          onSuccess={() => setRefresh((r) => r + 1)}
         />
       )}
 
