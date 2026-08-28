@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Search, Loader2, Plus, Printer } from "lucide-react";
-import { searchFactures } from "@/lib/api/factures";
+import { searchFactures, mergeFactures } from "@/lib/api/factures";
 import type { Facture, StatutFacture } from "@/lib/api/types";
 import { ApiError } from "@/lib/api/types";
 import { extractItems, extractTotal, formatDate, formatMoney } from "@/lib/format";
@@ -50,6 +50,10 @@ export default function EspaceFacturesPage() {
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
 
+  const [selectedFactures, setSelectedFactures] = useState<string[]>([]);
+  const [isMerging, setIsMerging] = useState(false);
+  const [refresh, setRefresh] = useState(0);
+
   useEffect(() => {
     searchFactures({
       statut: statut === "all" ? undefined : statut,
@@ -60,11 +64,40 @@ export default function EspaceFacturesPage() {
       .then((res) => {
         setFactures(extractItems(res));
         setTotal(extractTotal(res));
+        setSelectedFactures([]);
       })
       .catch((err) =>
         setError(err instanceof ApiError ? err.message : "Impossible de charger les factures."),
       );
-  }, [statut, recherche, page]);
+  }, [statut, recherche, page, refresh]);
+
+  function toggleFacture(facture: Facture) {
+    if (selectedFactures.includes(facture.id)) {
+      setSelectedFactures((prev) => prev.filter((id) => id !== facture.id));
+    } else {
+      if (selectedFactures.length > 0) {
+        const firstSelected = factures?.find((f) => f.id === selectedFactures[0]);
+        if (firstSelected && firstSelected.clientId !== facture.clientId) {
+          alert("Vous ne pouvez fusionner que des factures appartenant au même client.");
+          return;
+        }
+      }
+      setSelectedFactures((prev) => [...prev, facture.id]);
+    }
+  }
+
+  async function handleMergeFactures() {
+    if (selectedFactures.length < 2) return;
+    setIsMerging(true);
+    try {
+      await mergeFactures(selectedFactures);
+      setRefresh((r) => r + 1);
+    } catch (err) {
+      alert(err instanceof ApiError ? err.message : "Erreur lors de la fusion.");
+    } finally {
+      setIsMerging(false);
+    }
+  }
 
   return (
     <div className="flex min-h-screen flex-col min-w-0 print:bg-white print:text-black">
@@ -144,9 +177,22 @@ export default function EspaceFacturesPage() {
       ) : (
         <div className="flex flex-col">
           <div className="flex-1">
+            {selectedFactures.length > 1 && (
+              <div className="mb-3">
+                <Button
+                  onClick={handleMergeFactures}
+                  disabled={isMerging}
+                  className="h-8 rounded-[6px] bg-brand-orange hover:bg-brand-orange-dark px-4 text-[12px] font-bold text-white shadow-none"
+                >
+                  {isMerging ? <Loader2 className="mr-2 animate-spin" size={14} /> : null}
+                  Fusionner les factures sélectionnées ({selectedFactures.length})
+                </Button>
+              </div>
+            )}
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-10 text-center"></TableHead>
                   <TableHead>Numéro</TableHead>
                   <TableHead>Client</TableHead>
                   <TableHead>Émise le</TableHead>
@@ -158,15 +204,26 @@ export default function EspaceFacturesPage() {
               <TableBody>
                 {factures.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center text-brand-grey py-10">
+                    <TableCell colSpan={7} className="text-center text-brand-grey py-10">
                       Aucune facture trouvée.
                     </TableCell>
                   </TableRow>
                 ) : (
                   factures.map((facture) => {
                     const clientName = facture.client ? (facture.client.prenom ? `${facture.client.prenom} ${facture.client.nom}` : facture.client.nom) : "—";
+                    const isOuverte = facture.statut === "OUVERTE";
                     return (
                       <TableRow key={facture.id} className="cursor-pointer" onClick={() => router.push(`/staff/invoices/${facture.id}`)}>
+                        <TableCell onClick={(e) => e.stopPropagation()} className="text-center">
+                          {isOuverte ? (
+                            <input
+                              type="checkbox"
+                              checked={selectedFactures.includes(facture.id)}
+                              onChange={() => toggleFacture(facture)}
+                              className="h-4 w-4 cursor-pointer rounded border-white/20 bg-white/5 accent-brand-orange"
+                            />
+                          ) : null}
+                        </TableCell>
                         <TableCell>
                           <span className="font-semibold text-brand-orange">
                             {facture.numero}

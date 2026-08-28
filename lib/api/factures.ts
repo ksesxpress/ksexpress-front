@@ -57,6 +57,9 @@ export const searchFactures = (params: {
   taille?: number;
 }) => apiFetch<PaginatedResult<Facture> | Facture[]>(`/invoices${toQuery(params)}`);
 
+export const mergeFactures = (factureIds: string[]) =>
+  apiFetch<Facture>("/invoices/merge", { method: "POST", body: { factureIds } });
+
 export const getFacture = (id: string) => apiFetch<Facture>(`/invoices/${id}`);
 
 export const getPublicFacture = (id: string) => apiFetch<Facture>(`/invoices/public/${id}`);

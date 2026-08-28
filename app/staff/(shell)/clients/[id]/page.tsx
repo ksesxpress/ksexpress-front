@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { InputGroup, InputGroupInput } from "@/components/ui/input-group";
 import { Label } from "@/components/ui/label";
 import { PageHeader } from "@/components/app-shell/PageHeader";
+import { mergeFactures } from "@/lib/api/factures";
 
 const fieldClass = "h-11 rounded-[10px] border border-white/10 bg-white/5 text-white";
 const labelClass = "mb-1.5 block text-[12.5px] font-bold text-white/90";
@@ -48,6 +49,9 @@ export default function ClientDetailPage({ params }: { params: Promise<{ id: str
   const [isSaving, setIsSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
+  const [selectedFactures, setSelectedFactures] = useState<string[]>([]);
+  const [isMerging, setIsMerging] = useState(false);
+
   const load = useCallback(() => {
     getClientResume(id)
       .then((r) => {
@@ -58,11 +62,25 @@ export default function ClientDetailPage({ params }: { params: Promise<{ id: str
         setEmail(r.client.email ?? "");
         setAdresse(r.client.adresse ?? "");
         setCanal(r.client.canalNotificationPrefere);
+        setSelectedFactures([]);
       })
       .catch((err) => setError(err instanceof ApiError ? err.message : "Impossible de charger ce client."));
   }, [id]);
 
   useEffect(load, [load]);
+
+  async function handleMergeFactures() {
+    if (selectedFactures.length < 2) return;
+    setIsMerging(true);
+    try {
+      await mergeFactures(selectedFactures);
+      load();
+    } catch (err) {
+      alert(err instanceof ApiError ? err.message : "Erreur lors de la fusion.");
+    } finally {
+      setIsMerging(false);
+    }
+  }
 
   async function handleSave() {
     setIsSaving(true);
@@ -266,24 +284,53 @@ export default function ClientDetailPage({ params }: { params: Promise<{ id: str
         </section>
 
         <section className="rounded-[10px] border border-white/15 bg-white/5 backdrop-blur-xl p-5">
-          <h2 className="mb-3 text-[15px] font-bold text-white">Factures ({factures.length})</h2>
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="text-[15px] font-bold text-white">Factures ({factures.length})</h2>
+            {selectedFactures.length > 1 && (
+              <Button
+                onClick={handleMergeFactures}
+                disabled={isMerging}
+                className="h-8 rounded-[6px] bg-brand-orange hover:bg-brand-orange-dark px-3 text-[12px] font-bold text-white shadow-none"
+              >
+                {isMerging ? <Loader2 className="mr-2 animate-spin" size={14} /> : null}
+                Fusionner ({selectedFactures.length})
+              </Button>
+            )}
+          </div>
           <ul className="divide-y divide-white/10">
-            {factures.slice(0, 20).map((f) => (
-              <li key={f.id} className="flex items-center justify-between gap-3 py-2.5">
-                <div>
-                  <Link href={`/staff/invoices/${f.id}`} className="text-[13.5px] font-semibold text-brand-orange hover:underline">
-                    {f.numero}
-                  </Link>
-                  <p className="text-[11.5px] text-white/60">
-                    {formatMoney(f.total)} · payé {formatMoney(f.montantPaye)}
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-[12px] text-white/50">{formatDate(f.dateEmission)}</span>
-                  <FactureStatusBadge statut={f.statut} />
-                </div>
-              </li>
-            ))}
+            {factures.slice(0, 20).map((f) => {
+              const isOuverte = f.statut === "OUVERTE";
+              return (
+                <li key={f.id} className="flex items-center gap-3 py-2.5">
+                  {isOuverte ? (
+                    <input
+                      type="checkbox"
+                      checked={selectedFactures.includes(f.id)}
+                      onChange={() => {
+                        setSelectedFactures((prev) =>
+                          prev.includes(f.id) ? prev.filter((id) => id !== f.id) : [...prev, f.id]
+                        );
+                      }}
+                      className="h-4 w-4 rounded border-white/20 bg-white/10 accent-brand-orange"
+                    />
+                  ) : (
+                    <div className="w-4" /> // placeholder pour aligner
+                  )}
+                  <div className="flex-1">
+                    <Link href={`/staff/invoices/${f.id}`} className="text-[13.5px] font-semibold text-brand-orange hover:underline">
+                      {f.numero}
+                    </Link>
+                    <p className="text-[11.5px] text-white/60">
+                      {formatMoney(f.total)} · payé {formatMoney(f.montantPaye)}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[12px] text-white/50">{formatDate(f.dateEmission)}</span>
+                    <FactureStatusBadge statut={f.statut} />
+                  </div>
+                </li>
+              );
+            })}
             {factures.length === 0 && <p className="py-2 text-[13.5px] text-white/50">Aucune facture.</p>}
           </ul>
         </section>
