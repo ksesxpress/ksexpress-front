@@ -9,9 +9,11 @@ import {
   detachColisFromLot,
   changerStatutLot,
 } from "@/lib/api/lots";
-import type { Lot, StatutColis } from "@/lib/api/types";
+import { searchColis } from "@/lib/api/colis";
+import type { Lot, StatutColis, Client, Colis } from "@/lib/api/types";
 import { ApiError } from "@/lib/api/types";
-import { formatDate, formatWeight } from "@/lib/format";
+import { formatDate, formatWeight, extractItems } from "@/lib/format";
+import { ClientPicker } from "@/components/app-shell/ClientPicker";
 import { ColisStatusBadge, colisStatutLabel } from "@/components/app-shell/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { InputGroup, InputGroupInput } from "@/components/ui/input-group";
@@ -41,6 +43,10 @@ export default function LotDetailPage({ params }: { params: Promise<{ id: string
   const [motif, setMotif] = useState("");
   const [isChanging, setIsChanging] = useState(false);
 
+  const [selectedClient, setSelectedClient] = useState<Client | null>(null);
+  const [availablePackages, setAvailablePackages] = useState<Colis[] | null>(null);
+  const [isLoadingPackages, setIsLoadingPackages] = useState(false);
+
   const load = useCallback(() => {
     getLot(id)
       .then((l) => {
@@ -54,11 +60,33 @@ export default function LotDetailPage({ params }: { params: Promise<{ id: string
 
   useEffect(load, [load]);
 
-  async function handleAttach() {
-    const ids = colisIds
-      .split(/[\s,]+/)
-      .map((s) => s.trim())
-      .filter(Boolean);
+  const lotClient = lot?.colis?.find((c) => c.client)?.client ?? null;
+  const activeClient = lotClient || selectedClient;
+
+  useEffect(() => {
+    if (!activeClient) {
+      setAvailablePackages(null);
+      return;
+    }
+    setIsLoadingPackages(true);
+    searchColis({
+      codeKse: activeClient.codeKse,
+      statut: "RECEIVED_USA",
+      sansLot: true,
+      taille: 100, // fetching a good amount
+    })
+      .then((res) => setAvailablePackages(extractItems(res)))
+      .catch(() => setAvailablePackages([]))
+      .finally(() => setIsLoadingPackages(false));
+  }, [activeClient, lot]);
+
+  async function handleAttach(singleId?: string) {
+    const ids = singleId
+      ? [singleId]
+      : colisIds
+          .split(/[\s,]+/)
+          .map((s) => s.trim())
+          .filter(Boolean);
     if (ids.length === 0) return;
     setIsAttaching(true);
     setError(null);
@@ -221,30 +249,49 @@ export default function LotDetailPage({ params }: { params: Promise<{ id: string
           <h2 className="mb-3 text-[15px] font-extrabold text-white border-b border-white/15 pb-2">
             Colis du lot ({lot.colis?.length ?? 0})
           </h2>
-          <div className="mb-4 space-y-3">
-            <div>
-              <Label className={labelClass}>Rattacher des colis (IDs / Trackings)</Label>
-              <div className="flex gap-2">
-                <InputGroup className="bg-transparent border-none p-0 h-auto shadow-none flex-1">
-                  <InputGroupInput
-                    value={colisIds}
-                    onChange={(e) => setColisIds(e.target.value)}
-                    className={fieldClass}
-                    placeholder="Saisir IDs ou trackings..."
-                  />
-                </InputGroup>
-                <Button
-                  onClick={handleAttach}
-                  disabled={isAttaching || !colisIds}
-                  className="h-10 rounded-[8px] bg-gradient-to-br from-brand-orange to-brand-orange-dark px-4 text-[13px] font-bold text-white shadow-none disabled:opacity-70 shrink-0"
-                >
-                  {isAttaching ? <Loader2 className="animate-spin" size={16} /> : "Rattacher"}
-                </Button>
+          <div className="mb-6 space-y-4">
+            <h3 className="text-[13px] font-bold text-white/90">Ajouter des colis</h3>
+            {!lotClient ? (
+              <div>
+                <Label className={labelClass}>Sélectionner un client</Label>
+                <ClientPicker value={selectedClient} onChange={setSelectedClient} />
+                <p className="mt-1.5 text-[11.5px] text-white/50 font-medium">
+                  Le premier colis rattaché fixera le client de ce lot.
+                </p>
               </div>
-              <p className="mt-1 text-[11.5px] text-white/50 font-medium">
-                Un lot ne regroupe que les colis d&apos;un seul et même client.
-              </p>
-            </div>
+            ) : null}
+
+            {activeClient && (
+              <div className="rounded-[8px] bg-black/20 p-3 border border-white/5">
+                <p className="text-[12.5px] font-bold text-white/80 mb-2">
+                  Colis "Prêt à expédier" disponibles pour {activeClient.prenom ? `${activeClient.prenom} ${activeClient.nom}` : activeClient.nom}
+                </p>
+                {isLoadingPackages ? (
+                  <div className="flex justify-center py-4"><Loader2 className="animate-spin text-brand-orange" size={20} /></div>
+                ) : availablePackages && availablePackages.length > 0 ? (
+                  <ul className="divide-y divide-white/10 max-h-48 overflow-y-auto pr-1">
+                    {availablePackages.map(c => (
+                      <li key={c.id} className="flex items-center justify-between py-2">
+                        <div>
+                          <p className="text-[13px] font-bold text-white">{c.tracking ?? "(sans tracking)"}</p>
+                          <p className="text-[11px] text-white/50">{c.categorie ?? "Colis"} · {formatWeight(c.poidsLb)}</p>
+                        </div>
+                        <Button
+                          onClick={() => handleAttach(c.id)}
+                          disabled={isAttaching}
+                          variant="ghost"
+                          className="h-7 px-3 text-[11px] font-bold text-brand-orange hover:bg-brand-orange/10 rounded-[6px]"
+                        >
+                          Ajouter
+                        </Button>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-[12px] text-white/40 italic py-2">Aucun colis disponible pour ce client.</p>
+                )}
+              </div>
+            )}
           </div>
 
           {lot.colis && lot.colis.length > 0 ? (
