@@ -254,10 +254,7 @@ export default function LotDetailPage({ params }: { params: Promise<{ id: string
             {!lotClient ? (
               <div>
                 <Label className={labelClass}>Sélectionner un client</Label>
-                <ClientPicker value={selectedClient} onChange={setSelectedClient} />
-                <p className="mt-1.5 text-[11.5px] text-white/50 font-medium">
-                  Le premier colis rattaché fixera le client de ce lot.
-                </p>
+                <ClientPicker value={selectedClient} onChange={setSelectedClient} requireEmail={false} />
               </div>
             ) : null}
 

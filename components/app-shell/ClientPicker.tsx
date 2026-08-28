@@ -12,10 +12,12 @@ export function ClientPicker({
   value,
   onChange,
   placeholder = "Rechercher un client (nom, téléphone, code KSE)...",
+  requireEmail = true,
 }: {
   value: Client | null;
   onChange: (client: Client | null) => void;
   placeholder?: string;
+  requireEmail?: boolean;
 }) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<Client[]>([]);
@@ -26,7 +28,10 @@ export function ClientPicker({
     const timeout = setTimeout(() => {
       searchClients({ recherche: query, taille: 8 })
         .then((res) => {
-          const items = extractItems(res).filter(c => !!c.email);
+          let items = extractItems(res);
+          if (requireEmail) {
+            items = items.filter((c) => !!c.email);
+          }
           setResults(items);
         })
         .catch(() => setResults([]));
