@@ -178,7 +178,9 @@ export function CreateInvoiceDialog({
               ) : readyColis.length === 0 ? (
                 <div className="p-4 border border-white/10 rounded-[10px] bg-white/5">
                   <p className="text-[13px] text-brand-grey text-center font-medium">
-                    Ce client n&apos;a aucun colis « Prêt pour retrait » disponible à facturer.
+                    Ce client n&apos;a aucun colis « Prêt pour retrait » <strong className="text-white">non facturé</strong>.
+                    <br />
+                    <span className="text-[12px] opacity-80 mt-1 block">Si le client a des colis disponibles, c&apos;est qu&apos;ils ont déjà été facturés.</span>
                   </p>
                 </div>
               ) : (
