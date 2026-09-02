@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { PageHeader } from "@/components/app-shell/PageHeader";
 import { getProduits, toggleProduitActif, Produit } from "@/lib/api/produits";
 import { getActiveSuccursale } from "@/lib/auth/tokens";
+import { formatHtg } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Package, Plus, Search, MoreHorizontal, CheckCircle2, XCircle } from "lucide-react";
@@ -205,7 +206,7 @@ export default function ProductsPage() {
                         {prod.categorie?.nom || "—"}
                       </td>
                       <td className="px-4 py-3 font-semibold text-brand-orange">
-                        htg{Number(prod.prix).toFixed(2)}
+                        {formatHtg(prod.prix)}
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex flex-col gap-1 items-start">

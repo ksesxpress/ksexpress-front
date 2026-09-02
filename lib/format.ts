@@ -8,6 +8,13 @@ export function formatMoney(value: string | number | null | undefined): string {
   return `$${n.toLocaleString("fr-HT", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
+export function formatHtg(value: string | number | null | undefined): string {
+  if (value === null || value === undefined) return "—";
+  const n = typeof value === "string" ? Number(value) : value;
+  if (Number.isNaN(n)) return "—";
+  return `${n.toLocaleString("fr-HT", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} HTG`;
+}
+
 export function formatWeight(value: string | number | null | undefined): string {
   if (value === null || value === undefined) return "—";
   const n = typeof value === "string" ? Number(value) : value;
