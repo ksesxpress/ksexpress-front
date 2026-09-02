@@ -13,6 +13,8 @@ const clientLinks = [
   { href: "/register", label: "Créer un compte" },
   { href: "/#tracking", label: "Suivi public" },
 ];
+const date = new Date().getFullYear();
+const developer = "https://nekzoris.com";
 
 export function Footer() {
   return (
@@ -57,8 +59,8 @@ export function Footer() {
         </div>
 
         <div className="pt-4.5 text-center text-xs text-[#8a8072]">
-          © 2026 KS Express Service — Tous droits réservés · Site développé
-          par Nekzoris
+          © 2026 - {date}  KS Express Service — Tous droits réservés · Site développé
+          par <a href={developer}>Nekzoris</a>
         </div>
       </div>
     </footer>
