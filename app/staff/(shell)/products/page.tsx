@@ -20,7 +20,7 @@ export default function ProductsPage() {
   const [search, setSearch] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Produit | null>(null);
-  
+
   const [adjustingStockProduct, setAdjustingStockProduct] = useState<Produit | null>(null);
   const [historyProduct, setHistoryProduct] = useState<Produit | null>(null);
 
@@ -50,7 +50,7 @@ export default function ProductsPage() {
   }, [localSuccursaleId]);
 
   const filteredProducts = products?.filter(p =>
-    p.nom.toLowerCase().includes(search.toLowerCase()) || 
+    p.nom.toLowerCase().includes(search.toLowerCase()) ||
     p.sku.toLowerCase().includes(search.toLowerCase())
   ) || [];
 
@@ -138,25 +138,25 @@ export default function ProductsPage() {
                       className="h-9 rounded-md border-white/10 bg-black/20 text-white [&_input]:text-white focus-within:border-brand-orange focus-within:ring-brand-orange w-full"
                       showClear={true}
                     />
-                  <ComboboxContent className="border-white/15 bg-[#141b6e]/95 text-white backdrop-blur-2xl">
-                    <ComboboxEmpty className="py-6 text-center text-sm text-brand-grey">
-                      Aucune boutique trouvée.
-                    </ComboboxEmpty>
-                    <ComboboxList>
-                      <ComboboxItem value="all" className="text-white/60 data-highlighted:bg-white/10 cursor-pointer italic">
-                        Toutes les boutiques
-                      </ComboboxItem>
-                      {availableSuccursales
-                        .filter(b => boutiqueQuery ? b.nom.toLowerCase().includes(boutiqueQuery.toLowerCase()) : true)
-                        .map(b => (
-                        <ComboboxItem key={b.id} value={b.id} className="text-white data-highlighted:bg-white/10 cursor-pointer">
-                          {b.nom}
+                    <ComboboxContent className="border-white/15 bg-[#141b6e]/95 text-white backdrop-blur-2xl">
+                      <ComboboxEmpty className="py-6 text-center text-sm text-brand-grey">
+                        Aucune boutique trouvée.
+                      </ComboboxEmpty>
+                      <ComboboxList>
+                        <ComboboxItem value="all" className="text-white/60 data-highlighted:bg-white/10 cursor-pointer italic">
+                          Toutes les boutiques
                         </ComboboxItem>
-                      ))}
-                    </ComboboxList>
-                  </ComboboxContent>
-                </Combobox>
-              </div>
+                        {availableSuccursales
+                          .filter(b => boutiqueQuery ? b.nom.toLowerCase().includes(boutiqueQuery.toLowerCase()) : true)
+                          .map(b => (
+                            <ComboboxItem key={b.id} value={b.id} className="text-white data-highlighted:bg-white/10 cursor-pointer">
+                              {b.nom}
+                            </ComboboxItem>
+                          ))}
+                      </ComboboxList>
+                    </ComboboxContent>
+                  </Combobox>
+                </div>
               )}
             </div>
           </div>
@@ -205,7 +205,7 @@ export default function ProductsPage() {
                         {prod.categorie?.nom || "—"}
                       </td>
                       <td className="px-4 py-3 font-semibold text-brand-orange">
-                        ${Number(prod.prix).toFixed(2)}
+                        htg{Number(prod.prix).toFixed(2)}
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex flex-col gap-1 items-start">
