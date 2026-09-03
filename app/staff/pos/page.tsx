@@ -38,7 +38,8 @@ import { getActiveSuccursale } from "@/lib/auth/tokens";
 import { getSuccursale } from "@/lib/api/succursales";
 import { listerMoyensPaiementActifs } from "@/lib/api/parametres";
 import { ApiError, type Client, type ModePaiement } from "@/lib/api/types";
-import { formatMoney, formatDateTime } from "@/lib/format";
+import { formatHtg, formatDateTime } from "@/lib/format";
+import { getActiveSession, openSession, type SessionCaisse } from "@/lib/api/sessions";
 import { cn } from "@/lib/utils";
 import {
   getCategories,
@@ -143,6 +144,23 @@ export default function PosPage() {
   const [successMsg, setSuccessMsg] = useState("");
 
   const [receiptVente, setReceiptVente] = useState<Vente | null>(null);
+
+  // === SESSION CAISSE (Cash Start) ===
+  const [activeSession, setActiveSession] = useState<SessionCaisse | null>(null);
+  const [checkingSession, setCheckingSession] = useState(true);
+  const [fondInitial, setFondInitial] = useState("");
+  const [openingSession, setOpeningSession] = useState(false);
+
+  useEffect(() => {
+    if (!succursaleId) {
+      setCheckingSession(false);
+      return;
+    }
+    getActiveSession(succursaleId)
+      .then((sess) => setActiveSession(sess))
+      .catch((err) => console.error("Session fetch error:", err))
+      .finally(() => setCheckingSession(false));
+  }, [succursaleId]);
   const [receiptOpen, setReceiptOpen] = useState(false);
 
   // Modes de paiement réellement disponibles à la caisse — dérivés des
@@ -306,7 +324,7 @@ export default function PosPage() {
     try {
       const vente = await ensureVente();
       const payee = await ajouterPaiement(vente.id, { montant: Number(vente.total), mode: modeSelectionne });
-      setSuccessMsg(`Vente ${payee.numero} encaissée avec succès (${formatMoney(payee.total)}).`);
+      setSuccessMsg(`Vente ${payee.numero} encaissée avec succès (${formatHtg(payee.total)}).`);
       setReceiptVente(payee);
       setReceiptOpen(true);
       resetCart();
@@ -412,12 +430,58 @@ export default function PosPage() {
 
   const avoirActif = client !== null;
 
+  if (checkingSession) {
+    return <div className="flex h-full items-center justify-center p-6 text-white/50">Vérification de la caisse...</div>;
+  }
+
   if (!succursaleId) {
     return (
       <div className="flex h-full items-center justify-center p-6">
         <div className="flex items-center gap-2 rounded-[10px] border border-red-500/30 bg-red-500/10 p-4 text-red-300">
           <AlertCircle className="h-5 w-5 shrink-0" />
           <span>Aucune succursale active — sélectionnez une succursale pour ouvrir la caisse.</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (!activeSession) {
+    return (
+      <div className="flex h-full items-center justify-center p-6">
+        <div className="w-full max-w-md rounded-[10px] border border-white/10 bg-white/5 p-6 backdrop-blur-2xl">
+          <h2 className="mb-4 text-lg font-bold text-white">Ouvrir la caisse (Cash Start)</h2>
+          <p className="mb-6 text-sm text-white/70">
+            Veuillez entrer le montant de départ (fonds de caisse) pour commencer votre session.
+          </p>
+          <div className="flex flex-col gap-4">
+            <Input
+              type="number"
+              placeholder="Montant (ex: 5000)"
+              value={fondInitial}
+              onChange={(e) => setFondInitial(e.target.value)}
+              disabled={openingSession}
+              className="border-white/10 bg-black/20 text-white"
+            />
+            {errorMsg && <p className="text-sm text-red-400">{errorMsg}</p>}
+            <Button
+              className="w-full bg-brand-orange text-white hover:bg-brand-orange/90"
+              disabled={openingSession || !fondInitial}
+              onClick={async () => {
+                setOpeningSession(true);
+                setErrorMsg("");
+                try {
+                  const sess = await openSession(succursaleId, Number(fondInitial));
+                  setActiveSession(sess);
+                } catch (err: any) {
+                  setErrorMsg(err.message || "Erreur lors de l'ouverture de la caisse.");
+                } finally {
+                  setOpeningSession(false);
+                }
+              }}
+            >
+              {openingSession ? "Ouverture..." : "Ouvrir la caisse"}
+            </Button>
+          </div>
         </div>
       </div>
     );
@@ -564,7 +628,7 @@ export default function PosPage() {
                         {produit.nom}
                       </p>
                       <div className="mt-auto flex items-center justify-between pt-1">
-                        <span className="text-[13.5px] font-bold text-white">{formatMoney(produit.prix)}</span>
+                        <span className="text-[13.5px] font-bold text-white">{formatHtg(produit.prix)}</span>
                         {enRupture ? (
                           <span className="text-[10px] font-semibold text-red-400">Rupture</span>
                         ) : (
@@ -606,7 +670,7 @@ export default function PosPage() {
             {client && (
               <div className="mt-2 flex items-center justify-between rounded-[8px] border border-amber-500/25 bg-amber-500/10 px-3 py-2 text-[11.5px]">
                 <span className="text-amber-200/80">Code : {client.codeKse}</span>
-                <span className="font-semibold text-amber-300">Avoir : {formatMoney(client.balance)}</span>
+                <span className="font-semibold text-amber-300">Avoir : {formatHtg(client.balance)}</span>
               </div>
             )}
           </div>
@@ -647,7 +711,7 @@ export default function PosPage() {
                     >
                       <div className="min-w-0">
                         <p className="truncate text-[12.5px] font-semibold text-white">{ligne.produit.nom}</p>
-                        <p className="text-[10.5px] text-brand-grey">{formatMoney(ligne.produit.prix)}</p>
+                        <p className="text-[10.5px] text-brand-grey">{formatHtg(ligne.produit.prix)}</p>
                       </div>
                       <div className="flex items-center justify-center gap-1">
                         <button
@@ -666,7 +730,7 @@ export default function PosPage() {
                       </div>
                       <div className="flex items-center justify-end gap-1">
                         <span className="text-[12px] font-bold text-white">
-                          {formatMoney(Number(ligne.produit.prix) * ligne.quantite)}
+                          {formatHtg(Number(ligne.produit.prix) * ligne.quantite)}
                         </span>
                         <button onClick={() => removeFromCart(ligne.produit.id)} className="text-white/30 hover:text-red-400">
                           <X className="h-3 w-3" />
@@ -682,15 +746,15 @@ export default function PosPage() {
           <div className="shrink-0 space-y-1.5 border-t border-white/10 p-3">
             <div className="flex items-center justify-between text-[12.5px] text-white/70">
               <span>Sous-total</span>
-              <span>{formatMoney(sousTotal)}</span>
+              <span>{formatHtg(sousTotal)}</span>
             </div>
             <div className="flex items-center justify-between text-[12.5px] text-white/70">
               <span>Rabais</span>
-              <span className={remise > 0 ? "text-brand-orange" : ""}>-{formatMoney(remise)}</span>
+              <span className={remise > 0 ? "text-brand-orange" : ""}>-{formatHtg(remise)}</span>
             </div>
             <div className="flex items-center justify-between border-t border-white/10 pt-1.5 text-[15px] font-extrabold text-white">
               <span>Total à payer</span>
-              <span className="text-brand-orange">{formatMoney(total)}</span>
+              <span className="text-brand-orange">{formatHtg(total)}</span>
             </div>
           </div>
 
@@ -821,7 +885,7 @@ export default function PosPage() {
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="font-bold text-white">{formatMoney(v.total)}</span>
+                    <span className="font-bold text-white">{formatHtg(v.total)}</span>
                     <button
                       onClick={(e) => handleAnnulerVenteEnAttente(v.id, e)}
                       className="text-white/40 hover:text-red-400"
@@ -860,7 +924,7 @@ export default function PosPage() {
                   <div className="flex items-center justify-between gap-2">
                     <p className="font-mono text-[12.5px] font-semibold text-emerald-400">{v.numero}</p>
                     <div className="flex items-center gap-2">
-                      <span className="font-bold text-white">{formatMoney(v.total)}</span>
+                      <span className="font-bold text-white">{formatHtg(v.total)}</span>
                       <button
                         onClick={() => {
                           setReceiptVente(v);
@@ -880,7 +944,7 @@ export default function PosPage() {
                   <div className="mt-1.5 flex flex-wrap gap-1.5">
                     {v.paiements.map((p) => (
                       <span key={p.id} className="rounded-[6px] bg-white/10 px-2 py-0.5 text-[10.5px] font-semibold text-white/70">
-                        {p.mode} · {formatMoney(p.montant)}
+                        {p.mode} · {formatHtg(p.montant)}
                       </span>
                     ))}
                   </div>
@@ -925,7 +989,7 @@ export default function PosPage() {
               className="h-11 rounded-[8px] border-white/15 bg-white/5 text-white"
               autoFocus
             />
-            <p className="mt-1.5 text-[12px] text-white/50">Sous-total : {formatMoney(sousTotal)}</p>
+            <p className="mt-1.5 text-[12px] text-white/50">Sous-total : {formatHtg(sousTotal)}</p>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setRemiseDialogOpen(false)}>
