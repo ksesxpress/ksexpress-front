@@ -70,6 +70,9 @@ export const ajouterPaiement = (id: string, payload: AjouterPaiementPayload) =>
     body: payload,
   });
 
+export const updateFraisFacture = (id: string, payload: { fraisSupplementaires: number; fraisSupplementairesLabel?: string }) =>
+  apiFetch<Facture>(`/invoices/${id}/frais`, { method: "PATCH", body: payload });
+
 export const getFacturePdfUrl = (id: string, format: "a4" | "pos80" = "a4") =>
   `/invoices/${id}/pdf?format=${format}`;
 

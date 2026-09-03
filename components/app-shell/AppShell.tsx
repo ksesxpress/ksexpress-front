@@ -426,32 +426,41 @@ function AppShellInner({
                   </DropdownMenuItem> */}
                   <DropdownMenuSeparator className="bg-border/50 mb-1" />
 
-                  {availableSuccursales.length > 1 && !user?.isSuperAdmin && (
-                    <>
-                      <DropdownMenuLabel className="p-2 text-xs font-semibold text-muted-foreground uppercase">
-                        Changer de succursale
-                      </DropdownMenuLabel>
-                      {availableSuccursales.map(s => (
-                        <DropdownMenuItem
-                          key={s.id}
-                          onClick={() => switchSuccursale(s.id)}
-                          className={cn(
-                            "cursor-pointer gap-2 py-2 px-2 text-sm text-sidebar-foreground focus:bg-sidebar-accent focus:text-sidebar-accent-foreground rounded-md flex items-center justify-between",
-                            activeSuccursaleId === s.id && "bg-brand-orange/10 text-brand-orange font-semibold"
-                          )}
-                        >
-                          <div className="flex items-center gap-2">
-                            <Store size={14} className={activeSuccursaleId === s.id ? "text-brand-orange" : "text-muted-foreground"} />
-                            <div className="flex flex-row items-center gap-1.5">
-                              <span className="truncate">{s.nom}</span>
-                              <span className="text-[10px] font-medium text-muted-foreground uppercase">[{s.activite}]</span>
+                  {(() => {
+                    const isGlobalRole = user?.isSuperAdmin || user?.roleCustomNom === "DEV" || user?.roleCustomNom?.toUpperCase() === "DEV";
+                    const displaySuccursales = isGlobalRole
+                      ? availableSuccursales.filter(s => s.activite !== "SHIPPING" || s.id === activeSuccursaleId)
+                      : availableSuccursales;
+
+                    if (displaySuccursales.length <= 1) return null;
+
+                    return (
+                      <>
+                        <DropdownMenuLabel className="p-2 text-xs font-semibold text-muted-foreground uppercase">
+                          Changer de succursale
+                        </DropdownMenuLabel>
+                        {displaySuccursales.map((s: any) => (
+                          <DropdownMenuItem
+                            key={s.id}
+                            onClick={() => switchSuccursale(s.id)}
+                            className={cn(
+                              "cursor-pointer gap-2 py-2 px-2 text-sm text-sidebar-foreground focus:bg-sidebar-accent focus:text-sidebar-accent-foreground rounded-md flex items-center justify-between",
+                              activeSuccursaleId === s.id && "bg-brand-orange/10 text-brand-orange font-semibold"
+                            )}
+                          >
+                            <div className="flex items-center gap-2">
+                              <Store size={14} className={activeSuccursaleId === s.id ? "text-brand-orange" : "text-muted-foreground"} />
+                              <div className="flex flex-row items-center gap-1.5">
+                                <span className="truncate">{s.nom}</span>
+                                <span className="text-[10px] font-medium text-muted-foreground uppercase">[{s.activite}]</span>
+                              </div>
                             </div>
-                          </div>
-                        </DropdownMenuItem>
-                      ))}
-                      <DropdownMenuSeparator className="bg-border/50 my-1" />
-                    </>
-                  )}
+                          </DropdownMenuItem>
+                        ))}
+                        <DropdownMenuSeparator className="bg-border/50 my-1" />
+                      </>
+                    );
+                  })()}
 
                   <DropdownMenuItem
                     onClick={onLogout}

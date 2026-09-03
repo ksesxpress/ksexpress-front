@@ -17,7 +17,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const fieldClass = "!h-10 w-full rounded-[8px] border-[1.5px] border-[#eadfcf] shadow-none px-3 text-[13.5px]";
-const labelClass = "mb-1 block text-[12.5px] font-bold ";
+const labelClass = "mb-1 block text-[12.5px] font-bold text-brand-dark";
 
 export function CreateGrilleDialog({
   open,

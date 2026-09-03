@@ -15,6 +15,8 @@ import { InputGroup, InputGroupInput } from "@/components/ui/input-group";
 import { Label } from "@/components/ui/label";
 import { PageHeader } from "@/components/app-shell/PageHeader";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Edit2 } from "lucide-react";
+import { EditFraisFactureDialog } from "@/components/staff/EditFraisFactureDialog";
 
 const cardClass = "rounded-[10px] border border-white/15 bg-white/5 backdrop-blur-xl p-5 shadow-none text-white";
 const fieldClass = "!h-10 w-full rounded-[8px] border-[1.5px] border-white/10 bg-white/5 backdrop-blur-xl px-3 text-[13.5px] text-white shadow-none";
@@ -24,9 +26,11 @@ export default function FactureDetailPage({ params }: { params: Promise<{ id: st
   const { id } = usePromise(params);
   const { user } = useAuth();
   const canEncaisser = user?.isStaff;
+  const canEditFrais = user?.isSuperAdmin || user?.roleCustomNom === "DEV" || user?.roleCustomNom?.toUpperCase() === "DEV";
 
   const [facture, setFacture] = useState<Facture | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [editFraisOpen, setEditFraisOpen] = useState(false);
 
   const [montant, setMontant] = useState("");
   const [mode, setMode] = useState<ModePaiement>("ESPECES");
@@ -190,11 +194,23 @@ export default function FactureDetailPage({ params }: { params: Promise<{ id: st
               <p className="py-4 text-[13.5px] text-white/50 text-center">Aucune ligne.</p>
             )}
           </ul>
-          {Number(facture.fraisSupplementaires) > 0 && (
+          {(Number(facture.fraisSupplementaires) > 0 || (canEditFrais && facture.statut !== "PAYEE" && facture.statut !== "ANNULEE")) && (
             <div className="mt-3 flex items-center justify-between border-t border-white/20 pt-3 text-[13.5px]">
-              <span className="font-bold text-white">
-                {facture.fraisSupplementairesLabel || "Frais supplémentaires"}
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="font-bold text-white">
+                  {facture.fraisSupplementairesLabel || "Frais supplémentaires"}
+                </span>
+                {canEditFrais && facture.statut !== "PAYEE" && facture.statut !== "ANNULEE" && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 text-brand-orange hover:bg-white/10 hover:text-brand-orange"
+                    onClick={() => setEditFraisOpen(true)}
+                  >
+                    <Edit2 size={12} />
+                  </Button>
+                )}
+              </div>
               <span className="font-extrabold text-white">
                 {formatMoney(facture.fraisSupplementaires)}
               </span>
@@ -331,6 +347,17 @@ export default function FactureDetailPage({ params }: { params: Promise<{ id: st
           </section>
         </div>
       </div>
+
+      {editFraisOpen && (
+        <EditFraisFactureDialog
+          open={editFraisOpen}
+          onOpenChange={setEditFraisOpen}
+          factureId={facture.id}
+          initialFrais={Number(facture.fraisSupplementaires) || 0}
+          initialLabel={facture.fraisSupplementairesLabel}
+          onSuccess={load}
+        />
+      )}
     </div>
   );
 }
