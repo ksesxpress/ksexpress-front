@@ -20,6 +20,10 @@ export async function getActiveSession(succursaleId: string): Promise<SessionCai
         "x-succursale-id": succursaleId,
       },
     });
+    // Si l'API retourne null, vide, ou un blob (ex: NestJS qui retourne rien), ce n'est pas un objet session
+    if (!session || typeof session !== "object" || !("id" in session)) {
+      return null;
+    }
     return session;
   } catch (err: any) {
     if (err.status === 404 || err.message?.includes("introuvable")) {
