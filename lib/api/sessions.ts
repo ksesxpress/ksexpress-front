@@ -37,10 +37,9 @@ export async function openSession(succursaleId: string, fondInitial: number): Pr
   return apiFetch<SessionCaisse>("/sessions-caisse/open", {
     method: "POST",
     headers: {
-      "Content-Type": "application/json",
       "x-succursale-id": succursaleId,
     },
-    body: JSON.stringify({ fondInitial }),
+    body: { fondInitial },
   });
 }
 
@@ -53,9 +52,8 @@ export async function closeSession(
   return apiFetch<SessionCaisse>(`/sessions-caisse/${sessionId}/close`, {
     method: "POST",
     headers: {
-      "Content-Type": "application/json",
       "x-succursale-id": succursaleId,
     },
-    body: JSON.stringify({ fondFinal, notes }),
+    body: { fondFinal, notes },
   });
 }
