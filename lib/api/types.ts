@@ -200,6 +200,7 @@ export interface ClientResume {
   client: Client;
   colis: Colis[];
   factures: Facture[];
+  isVerified?: boolean;
 }
 
 export interface PaginatedResult<T> {

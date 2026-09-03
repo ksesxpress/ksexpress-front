@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState, use as usePromise } from "react";
 import Link from "next/link";
 import { Loader2, ArrowLeft } from "lucide-react";
-import { getClientResume, updateClient, deactivateClient } from "@/lib/api/clients";
+import { getClientResume, updateClient, deactivateClient, verifyClient } from "@/lib/api/clients";
 import type { ClientResume, CanalNotification } from "@/lib/api/types";
 import { ApiError } from "@/lib/api/types";
 import { formatDate, formatMoney, formatWeight } from "@/lib/format";
@@ -38,6 +38,7 @@ export default function ClientDetailPage({ params }: { params: Promise<{ id: str
   const { id } = usePromise(params);
   const { user } = useAuth();
   const canEdit = user?.isStaff;
+  const canVerify = user?.isSuperAdmin;
 
   const [resume, setResume] = useState<ClientResume | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -53,6 +54,7 @@ export default function ClientDetailPage({ params }: { params: Promise<{ id: str
 
   const [selectedFactures, setSelectedFactures] = useState<string[]>([]);
   const [isMerging, setIsMerging] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
 
   const load = useCallback(() => {
     getClientResume(id)
@@ -112,6 +114,21 @@ export default function ClientDetailPage({ params }: { params: Promise<{ id: str
       setResume((prev) => (prev ? { ...prev, client: updated } : prev));
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Impossible de désactiver ce client.");
+    }
+  }
+
+  async function handleVerify() {
+    if (!confirm("Voulez-vous vraiment vérifier manuellement ce compte client (sans utiliser l'email de confirmation) ?")) return;
+    setIsVerifying(true);
+    try {
+      await verifyClient(id);
+      setSaved(true);
+      setAlertMessage("Le client a été vérifié avec succès.");
+      load();
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Erreur lors de la vérification.");
+    } finally {
+      setIsVerifying(false);
     }
   }
 
@@ -257,6 +274,15 @@ export default function ClientDetailPage({ params }: { params: Promise<{ id: str
                 className="h-10 rounded-[8px] border border-red-500/50 bg-red-500/10 px-6 text-[13.5px] font-semibold text-red-500 hover:bg-red-500/20 transition-colors"
               >
                 Désactiver
+              </button>
+            )}
+            {canVerify && resume.isVerified === false && (
+              <button
+                onClick={handleVerify}
+                disabled={isVerifying}
+                className="h-10 rounded-[8px] border border-emerald-500/50 bg-emerald-500/10 px-6 text-[13.5px] font-semibold text-emerald-500 hover:bg-emerald-500/20 transition-colors disabled:opacity-70"
+              >
+                {isVerifying ? <Loader2 className="animate-spin" size={16} /> : "Forcer la vérification"}
               </button>
             )}
           </div>
