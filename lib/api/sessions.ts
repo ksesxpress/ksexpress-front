@@ -39,21 +39,20 @@ export async function openSession(succursaleId: string, fondInitial: number): Pr
     headers: {
       "x-succursale-id": succursaleId,
     },
-    body: { fondInitial },
+    body: { cashStart: fondInitial },
   });
 }
 
 export async function closeSession(
   succursaleId: string,
   sessionId: string,
-  fondFinal?: number,
-  notes?: string
+  fondFinal?: number
 ): Promise<SessionCaisse> {
   return apiFetch<SessionCaisse>(`/sessions-caisse/${sessionId}/close`, {
     method: "POST",
     headers: {
       "x-succursale-id": succursaleId,
     },
-    body: { fondFinal, notes },
+    body: { cashEnd: fondFinal },
   });
 }
